@@ -1,0 +1,21 @@
+# Generated files.
+bin/
+gen/
+out/
+build/
+
+# Local configuration file (sdk path, etc).
+local.properties
+
+# Mac poop.
+.DS_Store
+
+# Gradle cache.
+.gradle
+
+# Most IDEA/Android Studio project files as they're specific to a user.
+/.idea/*
+*.iml
+
+# Exception for code style settings in the .idea folder.
+!/.idea/codeStyles/
