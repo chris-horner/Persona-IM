@@ -2,12 +2,11 @@ package codes.chrishorner.personasns
 
 import android.app.Activity
 import android.graphics.BlurMaskFilter
-import android.graphics.BlurMaskFilter.Blur
 import android.graphics.BlurMaskFilter.Blur.NORMAL
-import android.inputmethodservice.Keyboard.Row
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -15,64 +14,47 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shader
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.inset
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.scaleMatrix
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.R.font
 import codes.chrishorner.personasns.ui.theme.PersonaRed
@@ -120,38 +102,16 @@ class MainActivity : ComponentActivity() {
               ),
             )
 
-            Column {
-              Text(
-                text = "And how's that any different\nthan usual?",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                fontFamily = OptimaNova,
-                modifier = Modifier
-                  .drawWithCache {
-                    val outerBoxStem = Outline(OuterBoxStem())
-                    val outerBoxShape = OuterBox()
-                    val outerBox = Outline(outerBoxShape)
-                    val innerBoxStem = Outline(InnerBoxStem())
-                    val innerBox = Outline(InnerBox())
-                    val shadowPaint = Paint().apply {
-                      color = Color.Black
-                      alpha = 0.6f
-                      asFrameworkPaint().maskFilter = BlurMaskFilter(2.dp.toPx(), NORMAL)
-                    }
-
-                    onDrawBehind {
-                      //scale(scale, pivot = Offset(18.dp.toPx(), size.center.y + 16.dp.toPx())) {
-                        drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
-                        drawOutline(outerBox, color = Color.White)
-                      //}
-                      drawOutline(outerBoxStem, color = Color.White)
-                      drawOutline(innerBoxStem, color = Color.Black)
-                      //scale(scale, pivot = Offset(18.dp.toPx(), size.center.y + 16.dp.toPx())) {
-                        drawOutline(innerBox, color = Color.Black)
-                      //}
-                    }
-                  }
-                  .padding(start = 58.dp, top = 24.dp, end = 62.dp, bottom = 26.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(32.dp)) {
+              Entry(
+                avatarImage = R.drawable.ann,
+                color = Color(0xFFFE93C9),
+                text = "And how's that any different than usual?",
+              )
+              Entry(
+                avatarImage = R.drawable.ryuji,
+                color = Color(0xFFF0EA40),
+                text = "Shaddup! I mean I seriously can't today... I even tried.",
               )
             }
           }
@@ -166,8 +126,66 @@ private val OptimaNova = FontFamily(
 )
 
 @Composable
-private fun Avatar() {
+private fun Entry(
+  @DrawableRes avatarImage: Int,
+  color: Color,
+  text: String,
+) {
+  Row(verticalAlignment = Alignment.Bottom) {
+    Avatar(avatarImage, color)
+    Text(
+      text = text,
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.White,
+      fontFamily = OptimaNova,
+      modifier = Modifier
+        .offset(x = (-18).dp)
+        .drawWithCache {
+          val outerBoxStem = Outline(OuterBoxStem())
+          val outerBoxShape = OuterBox()
+          val outerBox = Outline(outerBoxShape)
+          val innerBoxStem = Outline(InnerBoxStem())
+          val innerBox = Outline(InnerBox())
+          val shadowPaint = Paint().apply {
+            this.color = Color.Black
+            alpha = 0.3f
+            asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
+          }
 
+          onDrawBehind {
+            drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
+            drawOutline(outerBox, color = Color.White)
+            drawOutline(outerBoxStem, color = Color.White)
+            drawOutline(innerBoxStem, color = Color.Black)
+            drawOutline(innerBox, color = Color.Black)
+          }
+        }
+        .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
+    )
+  }
+}
+
+@Composable
+private fun Avatar(@DrawableRes avatarImage: Int, color: Color) {
+  Box(
+    modifier = Modifier
+      .width(110.dp)
+      .height(90.dp)
+      .drawBehind {
+        drawOutline(Outline(AvatarBlackBox()), Color.Black)
+        drawOutline(Outline(AvatarWhiteBox()), Color.White)
+        drawOutline(Outline(AvatarColoredBox()), color)
+      }
+      .clip(with(LocalDensity.current) { AvatarClipBox() })
+  ) {
+    Image(
+      painter = painterResource(avatarImage),
+      contentDescription = null,
+      modifier = Modifier
+        .size(80.dp)
+        .align(Alignment.TopEnd)
+    )
+  }
 }
 
 @Composable
@@ -196,52 +214,74 @@ private fun OuterBox(): Shape {
 
 private fun Density.OuterBox(): Shape {
   return GenericShape { size, _ ->
-    moveTo(42.dp.toPx(), 5.dp.toPx())
+    moveTo(31.7.dp.toPx(), 3.1.dp.toPx())
     lineTo(size.width, 0f)
-    lineTo(size.width - 35.dp.toPx(), size.height)
-    lineTo(18.dp.toPx(), size.height - 13.dp.toPx())
+    lineTo(size.width - 23.dp.toPx(), size.height)
+    lineTo(15.6.dp.toPx(), size.height - 8.dp.toPx())
     close()
   }
 }
 
 private fun Density.InnerBox(): Shape {
   return GenericShape { size, _ ->
-    moveTo(47.dp.toPx(), 12.dp.toPx())
-    lineTo(size.width - 18.dp.toPx(), 6.dp.toPx())
-    lineTo(size.width - 40.dp.toPx(), size.height - 6.dp.toPx())
-    lineTo(27.dp.toPx(), size.height - 20.dp.toPx())
+    moveTo(33.dp.toPx(), 7.7.dp.toPx())
+    lineTo(size.width - 13.dp.toPx(), 3.7.dp.toPx())
+    lineTo(size.width - 25.7.dp.toPx(), size.height - 4.6.dp.toPx())
+    lineTo(20.4.dp.toPx(), size.height - 12.dp.toPx())
     close()
   }
 }
 
 private fun Density.OuterBoxStem(): Shape = GenericShape { size, _ ->
-  moveTo(0f, size.center.y + 10.dp.toPx())
-  lineTo(26.dp.toPx(), size.center.y - 14.5.dp.toPx())
-  lineTo(28.dp.toPx(), size.center.y - 7.dp.toPx())
-  lineTo(43.dp.toPx(), size.center.y - 17.dp.toPx())
-  lineTo(35.5.dp.toPx(), size.center.y + 14.dp.toPx())
-  lineTo(16.dp.toPx(), size.center.y + 18.dp.toPx())
-  lineTo(13.5.dp.toPx(), size.center.y + 8.5.dp.toPx())
+  moveTo(0f, size.center.y + 6.6.dp.toPx())
+  lineTo(19.7.dp.toPx(), size.center.y - 11.dp.toPx())
+  lineTo(21.dp.toPx(), size.center.y - 5.4.dp.toPx())
+  lineTo(32.4.dp.toPx(), size.center.y - 13.3.dp.toPx())
+  lineTo(26.6.dp.toPx(), size.center.y + 10.2.dp.toPx())
+  lineTo(11.7.dp.toPx(), size.center.y + 13.3.dp.toPx())
+  lineTo(10.dp.toPx(), size.center.y + 6.1.dp.toPx())
   close()
 }
 
 private fun Density.InnerBoxStem(): Shape = GenericShape { size, _ ->
-  moveTo(6.dp.toPx(), size.center.y + 5.5.dp.toPx())
-  lineTo(23.dp.toPx(), size.center.y + -9.dp.toPx())
-  lineTo(26.dp.toPx(), size.center.y - 2.5.dp.toPx())
-  lineTo(42.dp.toPx(), size.center.y - 9.dp.toPx())
-  lineTo(36.dp.toPx(), size.center.y + 7.dp.toPx())
-  lineTo(19.dp.toPx(), size.center.y + 10.dp.toPx())
-  lineTo(17.dp.toPx(), size.center.y + 1.dp.toPx())
+  moveTo(4.6.dp.toPx(), size.center.y + 3.8.dp.toPx())
+  lineTo(17.dp.toPx(), size.center.y - 7.2.dp.toPx())
+  lineTo(19.3.dp.toPx(), size.center.y - 2.1.dp.toPx())
+  lineTo(30.4.dp.toPx(), size.center.y - 6.7.dp.toPx())
+  lineTo(27.dp.toPx(), size.center.y + 4.6.dp.toPx())
+  lineTo(14.4.dp.toPx(), size.center.y + 7.4.dp.toPx())
+  lineTo(12.8.dp.toPx(), size.center.y + 0.6.dp.toPx())
   close()
 }
 
-private fun Density.AvatarColoredBox(): Shape = GenericShape { size, _ ->
-  moveTo(0f, 0f)
-  lineTo(92.5.dp.toPx(), 3.dp.toPx())
-  lineTo(106.5.dp.toPx(), 50.5.dp.toPx())
-  lineTo(23.dp.toPx(), 63.dp.toPx())
+private fun Density.AvatarColoredBox(): Shape = GenericShape { _, _ ->
+  moveTo(22.5.dp.toPx(), 28.dp.toPx())
+  lineTo(94.4.dp.toPx(), 31.4.dp.toPx())
+  lineTo(104.3.dp.toPx(), 67.5.dp.toPx())
+  lineTo(40.dp.toPx(), 76.6.dp.toPx())
   close()
 }
 
-private fun Density.AvatarWhiteBox
+private fun Density.AvatarWhiteBox(): Shape = GenericShape { _, _ ->
+  moveTo(16.4.dp.toPx(), 20.5.dp.toPx())
+  lineTo(96.7.dp.toPx(), 30.4.dp.toPx())
+  lineTo(106.4.dp.toPx(), 70.dp.toPx())
+  lineTo(37.8.dp.toPx(), 80.4.dp.toPx())
+  close()
+}
+
+private fun Density.AvatarBlackBox(): Shape = GenericShape { _, _ ->
+  moveTo(0f, 17.dp.toPx())
+  lineTo(100.5.dp.toPx(), 27.2.dp.toPx())
+  lineTo(110.dp.toPx(), 72.7.dp.toPx())
+  lineTo(33.4.dp.toPx(), 90.dp.toPx())
+  close()
+}
+
+private fun Density.AvatarClipBox(): Shape = GenericShape { _, _, ->
+  moveTo(10.3.dp.toPx(), (-5.6).dp.toPx())
+  lineTo(114.7.dp.toPx(), (-5.6).dp.toPx())
+  lineTo(114.7.dp.toPx(), 65.6.dp.toPx())
+  lineTo(40.dp.toPx(), 76.6.dp.toPx())
+  close()
+}
