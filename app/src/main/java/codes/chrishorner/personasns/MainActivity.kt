@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -175,7 +176,8 @@ val Transcript = listOf(
   ),
   Message(
     sender = Sender.Yusuke,
-    text = "If we tail him, he may lead us straight back to his boss.",
+    //text = "If we tail him, he may lead us straight back to his boss.",
+    text = "If we tail him",
   ),
   Message(
     sender = Sender.Ryuji,
@@ -206,7 +208,10 @@ private fun Entry(
   text: String,
   modifier: Modifier = Modifier,
 ) {
-  Row(verticalAlignment = Alignment.Bottom, modifier = modifier.padding(horizontal = 8.dp)) {
+  Row(
+    verticalAlignment = Alignment.Bottom,
+    modifier = modifier.padding(horizontal = 8.dp)
+  ) {
     Avatar(avatarImage, color)
     Text(
       text = text,
@@ -214,7 +219,13 @@ private fun Entry(
       color = Color.White,
       fontFamily = OptimaNova,
       modifier = Modifier
-        .offset(x = (-18).dp)
+        .layout { measurable, constraints ->
+          val newConstraints = constraints.copy(maxWidth = constraints.maxWidth + 18.dp.roundToPx())
+          val placeable = measurable.measure(newConstraints)
+          layout(placeable.measuredWidth, placeable.measuredHeight) {
+            placeable.place((-9).dp.roundToPx(), 0)
+          }
+        }
         .drawWithCache {
           val outerBoxStem = Outline(OuterStem())
           val outerBoxShape = OuterBox()
@@ -347,7 +358,8 @@ private fun Density.InnerBox(): Shape {
 private val StemVerticalOffset = 12.dp
 
 private fun Density.OuterStem(): Shape = GenericShape { size, _ ->
-  val verticalOrigin = size.height - StemVerticalOffset.toPx()
+  //val verticalOrigin = size.height - StemVerticalOffset.toPx()
+  val verticalOrigin = size.height * 0.9f
   moveTo(0f, verticalOrigin - 19.2.dp.toPx())
   lineTo(19.5.dp.toPx(), verticalOrigin - 37.2.dp.toPx())
   lineTo(20.8.dp.toPx(), verticalOrigin - 31.5.dp.toPx())
@@ -359,7 +371,8 @@ private fun Density.OuterStem(): Shape = GenericShape { size, _ ->
 }
 
 private fun Density.InnerStem(): Shape = GenericShape { size, _ ->
-  val verticalOrigin = size.height - StemVerticalOffset.toPx()
+  //val verticalOrigin = size.height - StemVerticalOffset.toPx()
+  val verticalOrigin = size.height * 0.9f
   moveTo(4.6.dp.toPx(), verticalOrigin - 22.2.dp.toPx())
   lineTo(17.dp.toPx(), verticalOrigin - 33.2.dp.toPx())
   lineTo(19.3.dp.toPx(), verticalOrigin - 28.1.dp.toPx())
