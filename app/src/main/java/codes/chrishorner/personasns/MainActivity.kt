@@ -16,7 +16,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -53,7 +51,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -61,6 +59,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.ui.theme.PersonaRed
@@ -176,8 +175,7 @@ val Transcript = listOf(
   ),
   Message(
     sender = Sender.Yusuke,
-    //text = "If we tail him, he may lead us straight back to his boss.",
-    text = "If we tail him",
+    text = "If we tail him, he may lead us straight back to his boss.",
   ),
   Message(
     sender = Sender.Ryuji,
@@ -208,46 +206,71 @@ private fun Entry(
   text: String,
   modifier: Modifier = Modifier,
 ) {
-  Row(
-    verticalAlignment = Alignment.Bottom,
-    modifier = modifier.padding(horizontal = 8.dp)
-  ) {
-    Avatar(avatarImage, color)
-    Text(
-      text = text,
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.White,
-      fontFamily = OptimaNova,
-      modifier = Modifier
-        .layout { measurable, constraints ->
-          val newConstraints = constraints.copy(maxWidth = constraints.maxWidth + 18.dp.roundToPx())
-          val placeable = measurable.measure(newConstraints)
-          layout(placeable.measuredWidth, placeable.measuredHeight) {
-            placeable.place((-9).dp.roundToPx(), 0)
-          }
-        }
-        .drawWithCache {
-          val outerBoxStem = Outline(OuterStem())
-          val outerBoxShape = OuterBox()
-          val outerBox = Outline(outerBoxShape)
-          val innerBoxStem = Outline(InnerStem())
-          val innerBox = Outline(InnerBox())
-          val shadowPaint = Paint().apply {
-            this.color = Color.Black
-            alpha = 0.3f
-            asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
-          }
+  EntryLayout(
+    avatar = { Avatar(avatarImage, color) },
+    text = {
+      Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = Color.White,
+        fontFamily = OptimaNova,
+        modifier = Modifier
+          .drawWithCache {
+            val outerBoxStem = Outline(OuterStem())
+            val outerBoxShape = OuterBox()
+            val outerBox = Outline(outerBoxShape)
+            val innerBoxStem = Outline(InnerStem())
+            val innerBox = Outline(InnerBox())
+            val shadowPaint = Paint().apply {
+              this.color = Color.Black
+              alpha = 0.3f
+              asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
+            }
 
-          onDrawBehind {
-            drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
-            drawOutline(outerBox, color = Color.White)
-            drawOutline(outerBoxStem, color = Color.White)
-            drawOutline(innerBoxStem, color = Color.Black)
-            drawOutline(innerBox, color = Color.Black)
+            onDrawBehind {
+              drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
+              drawOutline(outerBox, color = Color.White)
+              drawOutline(outerBoxStem, color = Color.White)
+              drawOutline(innerBoxStem, color = Color.Black)
+              drawOutline(innerBox, color = Color.Black)
+            }
           }
-        }
-        .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
-    )
+          .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
+      )
+    },
+    modifier = modifier.padding(horizontal = 8.dp)
+  )
+}
+
+@Composable
+private fun EntryLayout(
+  avatar: @Composable () -> Unit,
+  text: @Composable () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  Layout(
+    content = {
+      avatar()
+      text()
+    },
+    modifier = modifier,
+  ) { (avatarMeasurable, textMeasurable), constraints ->
+    val textOverlap = 18.dp.roundToPx()
+    val textVerticalOffset = 4.dp.roundToPx()
+
+    val avatarPlaceable = avatarMeasurable.measure(constraints)
+    val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textOverlap
+    val textConstraints = constraints.copy(maxWidth = textMaxWidth)
+    val textPlaceable = textMeasurable.measure(textConstraints)
+
+    val width = avatarPlaceable.width + textPlaceable.width - textOverlap
+    val height = maxOf(avatarPlaceable.height, textPlaceable.height)
+    layout(width, height) {
+      avatarPlaceable.place(0, 0)
+      val textY =
+        (avatarPlaceable.height - textPlaceable.height - textVerticalOffset).coerceAtLeast(0)
+      textPlaceable.place(avatarPlaceable.width - textOverlap, textY)
+    }
   }
 }
 
@@ -290,12 +313,13 @@ private fun Reply(text: String, modifier: Modifier = Modifier) {
   }
 }
 
+private val AvatarSize = DpSize(110.dp, 90.dp)
+
 @Composable
 private fun Avatar(@DrawableRes avatarImage: Int, color: Color) {
   Box(
     modifier = Modifier
-      .width(110.dp)
-      .height(90.dp)
+      .size(AvatarSize)
       .drawBehind {
         drawOutline(Outline(AvatarBlackBox()), Color.Black)
         drawOutline(Outline(AvatarWhiteBox()), Color.White)
@@ -355,11 +379,17 @@ private fun Density.InnerBox(): Shape {
   }
 }
 
-private val StemVerticalOffset = 12.dp
+private fun Density.getStemY(boxHeight: Float): Float {
+  return if (boxHeight > AvatarSize.height.toPx()) {
+    boxHeight - 16.dp.roundToPx()
+  } else {
+    boxHeight - 4.dp.roundToPx()
+  }
+}
 
 private fun Density.OuterStem(): Shape = GenericShape { size, _ ->
-  //val verticalOrigin = size.height - StemVerticalOffset.toPx()
-  val verticalOrigin = size.height * 0.9f
+  val verticalOrigin = getStemY(size.height)
+
   moveTo(0f, verticalOrigin - 19.2.dp.toPx())
   lineTo(19.5.dp.toPx(), verticalOrigin - 37.2.dp.toPx())
   lineTo(20.8.dp.toPx(), verticalOrigin - 31.5.dp.toPx())
@@ -371,8 +401,8 @@ private fun Density.OuterStem(): Shape = GenericShape { size, _ ->
 }
 
 private fun Density.InnerStem(): Shape = GenericShape { size, _ ->
-  //val verticalOrigin = size.height - StemVerticalOffset.toPx()
-  val verticalOrigin = size.height * 0.9f
+  val verticalOrigin = getStemY(size.height)
+
   moveTo(4.6.dp.toPx(), verticalOrigin - 22.2.dp.toPx())
   lineTo(17.dp.toPx(), verticalOrigin - 33.2.dp.toPx())
   lineTo(19.3.dp.toPx(), verticalOrigin - 28.1.dp.toPx())
