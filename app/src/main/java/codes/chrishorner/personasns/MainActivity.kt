@@ -42,10 +42,10 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -59,10 +59,12 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.ui.theme.PersonaRed
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +87,7 @@ class MainActivity : ComponentActivity() {
           )
 
           val scale by rememberInfiniteTransition().animateFloat(
-            initialValue = 1f,
+            initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
               tween(durationMillis = 1_000),
@@ -104,27 +106,16 @@ class MainActivity : ComponentActivity() {
           ) {
             itemsIndexed(Transcript) { index, message ->
               if (message.sender == Sender.Ren) {
-                Reply(text = message.text)
+                Reply(
+                  text = message.text,
+                  modifier = Modifier.drawConnectingLine(message, Transcript.getOrNull(index + 1))
+                )
               } else {
                 Entry(
                   avatarImage = message.sender.image,
                   color = message.sender.color,
                   text = message.text,
-                  modifier = Modifier.drawBehind {
-                    val infos = state.layoutInfo.visibleItemsInfo
-
-                    if (index < infos.size - 1) {
-                      val currentOffset = infos[index].offset
-                      val nextChildOffset = infos[index + 1].offset
-                      val delta = nextChildOffset - currentOffset
-                      drawLine(
-                        color = Color.Black,
-                        start = Offset(72.dp.toPx(), 64.dp.toPx()),
-                        end = Offset(108.dp.toPx(), 64.dp.toPx() + delta),
-                        strokeWidth = 16.dp.toPx(),
-                      )
-                    }
-                  }
+                  modifier = Modifier.drawConnectingLine(message, Transcript.getOrNull(index + 1))
                 )
               }
             }
@@ -144,6 +135,33 @@ class MainActivity : ComponentActivity() {
   }
 }
 
+private val linePath = Path()
+private val startOffset = 44.dp
+private val endOffset = 72.dp
+private val renOffset = 156.dp
+
+private fun Modifier.drawConnectingLine(message1: Message, message2: Message?): Modifier {
+  if (message2 == null) return this
+
+  return drawBehind {
+    val xOffset1 = if (message1.sender == Sender.Ren) size.width - renOffset.toPx() else 0f
+    val xOffset2 = if (message2.sender == Sender.Ren) size.width - renOffset.toPx() else 0f
+    val startY = startOffset.toPx()
+    val endY = size.height + endOffset.toPx()
+
+    with(linePath) {
+      reset()
+      moveTo(message1.linePoints.x1.toPx() + xOffset1, startY)
+      lineTo(message1.linePoints.x2.toPx() + xOffset1, startY)
+      lineTo(message2.linePoints.x2.toPx() + xOffset2, endY)
+      lineTo(message2.linePoints.x1.toPx() + xOffset2, endY)
+      close()
+    }
+
+    drawPath(linePath, Color.Black)
+  }
+}
+
 private val OptimaNova = FontFamily(
   Font(R.font.optima_nova_black, weight = FontWeight.Black)
 )
@@ -160,7 +178,9 @@ enum class Sender(@DrawableRes val image: Int, val color: Color) {
 data class Message(
   val sender: Sender,
   val text: String,
-)
+) {
+  val linePoints = randomLinePoints(sender)
+}
 
 // https://www.youtube.com/watch?v=Bfqeo056MwA
 // https://www.quotev.com/story/9496702/Persona-5-with-YN/43
@@ -198,6 +218,19 @@ val Transcript = listOf(
     text = "Wouldn't the mafia get caught off guard if they had a cat coming to deliver for 'em?",
   ),
 )
+
+class LinePoints(val x1: Dp, val x2: Dp)
+
+fun randomLinePoints(sender: Sender): LinePoints {
+  val width = if (sender == Sender.Ren) {
+    Random.nextInt(80, 112)
+  } else {
+    Random.nextInt(30, 52)
+  }
+  val startX = Random.nextInt(24, 130 - width)
+  val endX = startX + width
+  return LinePoints(startX.dp, endX.dp)
+}
 
 @Composable
 private fun Entry(
@@ -412,7 +445,6 @@ private fun Density.InnerStem(): Shape = GenericShape { size, _ ->
   lineTo(12.8.dp.toPx(), verticalOrigin - 25.4.dp.toPx())
   close()
 }
-
 
 private fun Density.AvatarColoredBox(): Shape = GenericShape { _, _ ->
   moveTo(22.5.dp.toPx(), 28.dp.toPx())
