@@ -9,11 +9,15 @@ import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
@@ -50,6 +56,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
@@ -129,9 +136,42 @@ class MainActivity : ComponentActivity() {
               .height(100.dp)
               .offset(x = 8.dp, y = (-4).dp),
           )
+
+          NextButton(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+              .align(Alignment.BottomEnd)
+              .systemBarsPadding()
+              .padding(16.dp)
+          )
         }
       }
     }
+  }
+}
+
+@Composable
+private fun NextButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+  val interaction = remember { MutableInteractionSource() }
+  val pressed by interaction.collectIsPressedAsState()
+  val scale by animateFloatAsState(targetValue = if (pressed) 0.90f else 1f, label = "scale")
+
+  Box(
+    modifier = modifier
+      .graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+      }
+      .clickable(
+        interactionSource = interaction,
+        indication = null,
+        onClick = onClick,
+      ),
+  ) {
+    Image(
+      painter = painterResource(R.drawable.next),
+      contentDescription = "Next button",
+    )
   }
 }
 
@@ -227,7 +267,7 @@ fun randomLinePoints(sender: Sender): LinePoints {
   } else {
     Random.nextInt(30, 52)
   }
-  val startX = Random.nextInt(24, 130 - width)
+  val startX = Random.nextInt(12, 60)
   val endX = startX + width
   return LinePoints(startX.dp, endX.dp)
 }
