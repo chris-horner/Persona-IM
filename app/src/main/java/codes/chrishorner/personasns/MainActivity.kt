@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
@@ -66,14 +67,18 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.ui.theme.PersonaRed
-import kotlin.random.Random
+
+private val AvatarSize = DpSize(110.dp, 90.dp)
+private val EntrySpacing = 20.dp
 
 class MainActivity : ComponentActivity() {
+
+  private val transcript = Transcript()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -103,26 +108,29 @@ class MainActivity : ComponentActivity() {
           )
 
           val state = rememberLazyListState()
+          val entries = transcript.entries.value
           LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(28.dp),
+            verticalArrangement = Arrangement.spacedBy(EntrySpacing),
             state = state,
             contentPadding = WindowInsets.systemBars
               .add(WindowInsets(top = 100.dp))
               .asPaddingValues(),
             modifier = Modifier.fillMaxSize()
           ) {
-            itemsIndexed(Transcript) { index, message ->
-              if (message.sender == Sender.Ren) {
+            itemsIndexed(entries) { index, entry ->
+              state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index + 1 }
+              if (entry.message.sender == Sender.Ren) {
                 Reply(
-                  text = message.text,
-                  modifier = Modifier.drawConnectingLine(message, Transcript.getOrNull(index + 1))
+                  text = entry.message.text,
+                  modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
                 )
               } else {
                 Entry(
-                  avatarImage = message.sender.image,
-                  color = message.sender.color,
-                  text = message.text,
-                  modifier = Modifier.drawConnectingLine(message, Transcript.getOrNull(index + 1))
+                  avatarImage = entry.message.sender.image,
+                  color = entry.message.sender.color,
+                  text = entry.message.text,
+                  modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
+                  // Need to draw _down_ from the current item to properly draw _behind_.
                 )
               }
             }
@@ -138,7 +146,7 @@ class MainActivity : ComponentActivity() {
           )
 
           NextButton(
-            onClick = { /*TODO*/ },
+            onClick = { transcript.advance() },
             modifier = Modifier
               .align(Alignment.BottomEnd)
               .systemBarsPadding()
@@ -176,101 +184,69 @@ private fun NextButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 private val linePath = Path()
-private val startOffset = 44.dp
-private val endOffset = 72.dp
-private val renOffset = 156.dp
+private val renOffset = 180.dp
 
-private fun Modifier.drawConnectingLine(message1: Message, message2: Message?): Modifier {
-  if (message2 == null) return this
+private val entryLineTop = 44.dp
+private val replyLineTop = 28.dp
 
-  return drawBehind {
-    val xOffset1 = if (message1.sender == Sender.Ren) size.width - renOffset.toPx() else 0f
-    val xOffset2 = if (message2.sender == Sender.Ren) size.width - renOffset.toPx() else 0f
-    val startY = startOffset.toPx()
-    val endY = size.height + endOffset.toPx()
+private val entryLineBottomOffset = EntrySpacing + entryLineTop
+private val replyLineBottomOffset = EntrySpacing + replyLineTop
 
-    with(linePath) {
-      reset()
-      moveTo(message1.linePoints.x1.toPx() + xOffset1, startY)
-      lineTo(message1.linePoints.x2.toPx() + xOffset1, startY)
-      lineTo(message2.linePoints.x2.toPx() + xOffset2, endY)
-      lineTo(message2.linePoints.x1.toPx() + xOffset2, endY)
-      close()
+private val lineCenter = 44.dp
+private val lineHorizontalVariance = 48.dp
+private val lineBaseWidth = 40.dp
+
+private fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier {
+  if (entry2 == null) return this
+
+  return drawWithCache {
+    val top = entryLineTop.toPx()
+    val bottom = size.height + if (entry2.message.sender == Sender.Ren) replyLineBottomOffset.toPx() else entryLineBottomOffset.toPx()
+    val x1 = (lineCenter + (lineHorizontalVariance * entry1.lineData.horizontalOffset)).toPx()
+    val x2 = x1 + (lineBaseWidth * entry1.lineData.widthVariation).toPx()
+
+    val x4 = if (entry2.message.sender == Sender.Ren) {
+      size.width - renOffset.toPx()
+    } else {
+      (lineCenter + (lineHorizontalVariance * entry2.lineData.horizontalOffset)).toPx()
     }
 
-    drawPath(linePath, Color.Black)
+    val x3 = if (entry2.message.sender == Sender.Ren) {
+      x4 + lineBaseWidth.toPx()
+    } else {
+      x4 + (lineBaseWidth * entry2.lineData.widthVariation).toPx()
+    }
+
+    val shadowPaint = Paint().apply {
+      this.color = Color.Black
+      alpha = 0.5f
+      asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
+    }
+
+    onDrawBehind {
+      with(linePath) {
+        reset()
+        moveTo(x1, top)
+        lineTo(x2, top)
+        lineTo(x3, bottom)
+        lineTo(x4, bottom)
+        close()
+      }
+
+      drawPath(linePath, Color.Black)
+
+      translate(top = 16.dp.toPx()) {
+        drawIntoCanvas {
+          it.drawPath(linePath, shadowPaint)
+        }
+      }
+    }
   }
 }
 
 private val OptimaNova = FontFamily(
   Font(R.font.optima_nova_black, weight = FontWeight.Black)
 )
-
-enum class Sender(@DrawableRes val image: Int, val color: Color) {
-  Ann(image = R.drawable.ann, color = Color(0xFFFE93C9)),
-  Ryuji(image = R.drawable.ryuji, color = Color(0xFFF0EA40)),
-  Yusuke(image = R.drawable.yusuke, color = Color(0xFF1BC8F9)),
-
-  // Ren is the player character, and has no avatar in chat.
-  Ren(image = -1, color = Color.Unspecified),
-}
-
-data class Message(
-  val sender: Sender,
-  val text: String,
-) {
-  val linePoints = randomLinePoints(sender)
-}
-
-// https://www.youtube.com/watch?v=Bfqeo056MwA
-// https://www.quotev.com/story/9496702/Persona-5-with-YN/43
-val Transcript = listOf(
-  Message(
-    sender = Sender.Ann,
-    text = "We have to find them tomorrow for sure. This is the only lead we have right now.",
-  ),
-  Message(
-    sender = Sender.Yusuke,
-    text = "Yes. It is highly likely that this part-time solicitor is somehow related to the mafia.",
-  ),
-  Message(
-    sender = Sender.Yusuke,
-    text = "If we tail him, he may lead us straight back to his boss.",
-  ),
-  Message(
-    sender = Sender.Ryuji,
-    text = "He talked to Iida and Nishiyama over at Central Street, right?",
-  ),
-  Message(
-    sender = Sender.Yusuke,
-    text = "Indeed, it seems that is where our target waits. But then... who should be the one to go?",
-  ),
-  Message(
-    sender = Sender.Ren,
-    text = "Morgana, I choose you.",
-  ),
-  Message(
-    sender = Sender.Ann,
-    text = "That's not a bad idea. Cats have nine lives, right? Morgana can spare one for this.",
-  ),
-  Message(
-    sender = Sender.Ryuji,
-    text = "Wouldn't the mafia get caught off guard if they had a cat coming to deliver for 'em?",
-  ),
-)
-
-class LinePoints(val x1: Dp, val x2: Dp)
-
-fun randomLinePoints(sender: Sender): LinePoints {
-  val width = if (sender == Sender.Ren) {
-    Random.nextInt(80, 112)
-  } else {
-    Random.nextInt(30, 52)
-  }
-  val startX = Random.nextInt(12, 60)
-  val endX = startX + width
-  return LinePoints(startX.dp, endX.dp)
-}
 
 @Composable
 private fun Entry(
@@ -385,8 +361,6 @@ private fun Reply(text: String, modifier: Modifier = Modifier) {
     )
   }
 }
-
-private val AvatarSize = DpSize(110.dp, 90.dp)
 
 @Composable
 private fun Avatar(@DrawableRes avatarImage: Int, color: Color) {
