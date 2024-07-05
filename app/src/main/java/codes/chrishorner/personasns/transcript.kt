@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -42,9 +43,11 @@ class Transcript internal constructor(private val density: Density) {
 
     if (coordinates.size > 1) {
       val secondLastIndex = coordinates.lastIndex - 1
+      val secondLastMessage = messages[secondLastIndex]
       val secondLastCoordinates = coordinates[secondLastIndex]
       coordinates[secondLastIndex] = updateLineCoordinates(
         index = secondLastIndex,
+        sender = secondLastMessage.sender,
         lineCoordinates = secondLastCoordinates,
       )
     }
@@ -80,11 +83,15 @@ class Transcript internal constructor(private val density: Density) {
 
   private fun updateLineCoordinates(
     index: Int,
+    sender: Sender,
     lineCoordinates: LineCoordinates,
   ): LineCoordinates = with(density) {
     val direction = if (index % 2 == 0) 1f else -1f
     val horizontalShift = randomBetween(MinLineShift.toPx(), MaxLineShift.toPx()) * direction
-    val horizontalOffset = Offset(horizontalShift, 0f)
+    val horizontalOffset = when (sender) {
+      Sender.Ren -> Offset(0f, 0f)
+      else -> Offset(horizontalShift, 0f)
+    }
 
     return lineCoordinates.copy(
       leftPoint = lineCoordinates.leftPoint + horizontalOffset,
@@ -95,6 +102,31 @@ class Transcript internal constructor(private val density: Density) {
   companion object {
     val AvatarSize = DpSize(110.dp, 90.dp)
     val EntrySpacing = 16.dp
+
+    context(CacheDrawScope)
+    fun getTopDrawingOffset(entry: Entry): Offset {
+      return when (entry.message.sender) {
+        Sender.Ren -> {
+          val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+          Offset(x = horizontalShift, y = 0f)
+        }
+
+        else -> Offset(x = 0f, y = 0f)
+      }
+    }
+
+    context(CacheDrawScope)
+    fun getBottomDrawingOffset(entry: Entry): Offset {
+      val verticalShift = size.height + EntrySpacing.toPx()
+      return when (entry.message.sender) {
+        Sender.Ren -> {
+          val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+          Offset(x = horizontalShift, y = verticalShift)
+        }
+
+        else -> Offset(x = 0f, y = verticalShift)
+      }
+    }
   }
 }
 
@@ -117,7 +149,7 @@ private val MaxLineWidth = 66.dp
 private val MinLineShift = 16.dp
 private val MaxLineShift = 36.dp
 
-private val RenMessageCenter = DpOffset(x = 44.dp, y = 28.dp)
+private val RenMessageCenter = DpOffset(x = 60.dp, y = 28.dp)
 
 private fun randomBetween(start: Float, end: Float): Float {
   return start + Random.nextFloat() * (end - start)

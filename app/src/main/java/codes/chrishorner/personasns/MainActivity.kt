@@ -194,12 +194,13 @@ private fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier
   if (entry2 == null) return this
 
   return drawWithCache {
-    val topLeft = entry1.lineCoordinates.leftPoint
-    val topRight = entry1.lineCoordinates.rightPoint
+    val topOffset = Transcript.getTopDrawingOffset(entry1)
+    val topLeft = entry1.lineCoordinates.leftPoint + topOffset
+    val topRight = entry1.lineCoordinates.rightPoint + topOffset
 
-    val secondEntryVerticalOffset = Offset(x = 0f, y = size.height + Transcript.EntrySpacing.toPx())
-    val bottomLeft = entry2.lineCoordinates.leftPoint + secondEntryVerticalOffset
-    val bottomRight = entry2.lineCoordinates.rightPoint + secondEntryVerticalOffset
+    val bottomOffset = Transcript.getBottomDrawingOffset(entry2)
+    val bottomLeft = entry2.lineCoordinates.leftPoint + bottomOffset
+    val bottomRight = entry2.lineCoordinates.rightPoint + bottomOffset
 
     val shadowPaint = Paint().apply {
       this.color = Color.Black
