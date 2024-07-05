@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
@@ -67,23 +69,19 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.ui.theme.PersonaRed
 
-private val AvatarSize = DpSize(110.dp, 90.dp)
-private val EntrySpacing = 20.dp
-
 class MainActivity : ComponentActivity() {
-
-  private val transcript = Transcript()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
     setContent {
+      val transcript = rememberTranscript()
+
       RootContainer {
         Box(
           modifier = Modifier
@@ -98,27 +96,34 @@ class MainActivity : ComponentActivity() {
               .offset(y = (-16).dp)
           )
 
-          val scale by rememberInfiniteTransition().animateFloat(
+          val scale by rememberInfiniteTransition(label = "item_repeat").animateFloat(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = infiniteRepeatable(
               tween(durationMillis = 1_000),
               repeatMode = RepeatMode.Reverse
             ),
+            label = "item_scale",
           )
 
-          val state = rememberLazyListState()
+          val listState = rememberLazyListState()
           val entries = transcript.entries.value
+          val lastIndex = entries.lastIndex
+
+          LaunchedEffect(lastIndex) {
+            if (lastIndex > 0) listState.animateScrollToItem(lastIndex)
+          }
+
           LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(EntrySpacing),
-            state = state,
+            verticalArrangement = Arrangement.spacedBy(Transcript.EntrySpacing),
+            state = listState,
             contentPadding = WindowInsets.systemBars
-              .add(WindowInsets(top = 100.dp))
+              .add(WindowInsets(top = 100.dp, bottom = 100.dp))
               .asPaddingValues(),
             modifier = Modifier.fillMaxSize()
           ) {
             itemsIndexed(entries) { index, entry ->
-              state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index + 1 }
+              //listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index + 1 }
               if (entry.message.sender == Sender.Ren) {
                 Reply(
                   text = entry.message.text,
@@ -184,38 +189,17 @@ private fun NextButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 private val linePath = Path()
-private val renOffset = 180.dp
-
-private val entryLineTop = 44.dp
-private val replyLineTop = 28.dp
-
-private val entryLineBottomOffset = EntrySpacing + entryLineTop
-private val replyLineBottomOffset = EntrySpacing + replyLineTop
-
-private val lineCenter = 44.dp
-private val lineHorizontalVariance = 48.dp
-private val lineBaseWidth = 40.dp
 
 private fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier {
   if (entry2 == null) return this
 
   return drawWithCache {
-    val top = entryLineTop.toPx()
-    val bottom = size.height + if (entry2.message.sender == Sender.Ren) replyLineBottomOffset.toPx() else entryLineBottomOffset.toPx()
-    val x1 = (lineCenter + (lineHorizontalVariance * entry1.lineData.horizontalOffset)).toPx()
-    val x2 = x1 + (lineBaseWidth * entry1.lineData.widthVariation).toPx()
+    val topLeft = entry1.lineCoordinates.leftPoint
+    val topRight = entry1.lineCoordinates.rightPoint
 
-    val x4 = if (entry2.message.sender == Sender.Ren) {
-      size.width - renOffset.toPx()
-    } else {
-      (lineCenter + (lineHorizontalVariance * entry2.lineData.horizontalOffset)).toPx()
-    }
-
-    val x3 = if (entry2.message.sender == Sender.Ren) {
-      x4 + lineBaseWidth.toPx()
-    } else {
-      x4 + (lineBaseWidth * entry2.lineData.widthVariation).toPx()
-    }
+    val secondEntryVerticalOffset = Offset(x = 0f, y = size.height + Transcript.EntrySpacing.toPx())
+    val bottomLeft = entry2.lineCoordinates.leftPoint + secondEntryVerticalOffset
+    val bottomRight = entry2.lineCoordinates.rightPoint + secondEntryVerticalOffset
 
     val shadowPaint = Paint().apply {
       this.color = Color.Black
@@ -226,20 +210,20 @@ private fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier
     onDrawBehind {
       with(linePath) {
         reset()
-        moveTo(x1, top)
-        lineTo(x2, top)
-        lineTo(x3, bottom)
-        lineTo(x4, bottom)
+        moveTo(topLeft.x, topLeft.y)
+        lineTo(topRight.x, topRight.y)
+        lineTo(bottomRight.x, bottomRight.y)
+        lineTo(bottomLeft.x, bottomRight.y)
         close()
       }
-
-      drawPath(linePath, Color.Black)
 
       translate(top = 16.dp.toPx()) {
         drawIntoCanvas {
           it.drawPath(linePath, shadowPaint)
         }
       }
+
+      drawPath(linePath, Color.Black)
     }
   }
 }
@@ -366,7 +350,7 @@ private fun Reply(text: String, modifier: Modifier = Modifier) {
 private fun Avatar(@DrawableRes avatarImage: Int, color: Color) {
   Box(
     modifier = Modifier
-      .size(AvatarSize)
+      .size(Transcript.AvatarSize)
       .drawBehind {
         drawOutline(Outline(AvatarBlackBox()), Color.Black)
         drawOutline(Outline(AvatarWhiteBox()), Color.White)
@@ -427,7 +411,7 @@ private fun Density.InnerBox(): Shape {
 }
 
 private fun Density.getStemY(boxHeight: Float): Float {
-  return if (boxHeight > AvatarSize.height.toPx()) {
+  return if (boxHeight > Transcript.AvatarSize.height.toPx()) {
     boxHeight - 16.dp.roundToPx()
   } else {
     boxHeight - 4.dp.roundToPx()

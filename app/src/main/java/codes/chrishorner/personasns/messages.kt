@@ -1,9 +1,12 @@
 package codes.chrishorner.personasns
 
 import androidx.annotation.DrawableRes
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import kotlin.random.Random
+
+data class Message(
+  val sender: Sender,
+  val text: String,
+)
 
 enum class Sender(@DrawableRes val image: Int, val color: Color) {
   Ann(image = R.drawable.ann, color = Color(0xFFFE93C9)),
@@ -14,68 +17,17 @@ enum class Sender(@DrawableRes val image: Int, val color: Color) {
   Ren(image = -1, color = Color.Unspecified),
 }
 
-data class Message(
-  val sender: Sender,
-  val text: String,
-)
-
-/**
- * Represents how the black background line connects to a message.
- */
-data class LineData(
-  val widthVariation: Float,
-  val horizontalOffset: Float,
-)
-
-data class Entry(
-  val message: Message,
-  val lineData: LineData,
-)
-
-class Transcript {
-  val entries = mutableStateOf<List<Entry>>(emptyList())
-
-  private val lineData = mutableListOf<LineData>()
-  private var currentMessages = emptyList<Message>()
-
+class MessagesState {
   private var count = 0
-  private val zeroOffsetLineData = LineData(1f, 0f)
 
-  fun advance() {
+  fun advance(): List<Message> {
     count++
 
     if (count > Messages.size) {
       count = 1
-      lineData.clear()
     }
 
-    currentMessages = Messages.take(count)
-
-    if (lineData.isNotEmpty()) {
-      lineData[lineData.lastIndex] = when {
-        lineData.lastIndex == 0 -> zeroOffsetLineData
-        currentMessages.last().sender == Sender.Ren -> zeroOffsetLineData
-        else -> generateLineData(lineData.lastIndex)
-      }
-    }
-
-    lineData += zeroOffsetLineData
-
-    entries.value = currentMessages.mapIndexed { index, message -> Entry(message, lineData[index]) }
-  }
-
-  private fun generateLineData(index: Int): LineData {
-    fun randomBetween(start: Float, end: Float): Float {
-      return start + Random.nextFloat() * (end - start)
-    }
-
-    return LineData(
-      widthVariation = randomBetween(0.8f, 1.4f),
-      horizontalOffset = when {
-        index % 2 == 0 -> randomBetween(0.5f, 1f)
-        else -> randomBetween(-0.5f, -1f)
-      }
-    )
+    return Messages.take(count)
   }
 }
 
