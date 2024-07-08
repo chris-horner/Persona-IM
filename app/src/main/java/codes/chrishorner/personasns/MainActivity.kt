@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.CacheDrawScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
@@ -272,7 +271,7 @@ private fun Entry(
           .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
       )
     },
-    modifier = modifier.padding(horizontal = 8.dp)
+    modifier = Modifier.padding(horizontal = 8.dp).then(modifier)
   )
 }
 

@@ -87,7 +87,10 @@ class Transcript internal constructor(private val density: Density) {
     lineCoordinates: LineCoordinates,
   ): LineCoordinates = with(density) {
     val direction = if (index % 2 == 0) 1f else -1f
-    val horizontalShift = randomBetween(MinLineShift.toPx(), MaxLineShift.toPx()) * direction
+    val horizontalShift = when {
+      index > 0 -> randomBetween(MinLineShift.toPx(), MaxLineShift.toPx()) * direction
+      else -> 0f
+    }
     val horizontalOffset = when (sender) {
       Sender.Ren -> Offset(0f, 0f)
       else -> Offset(horizontalShift, 0f)
@@ -147,7 +150,7 @@ private val MinLineWidth = 44.dp
 private val MaxLineWidth = 66.dp
 
 private val MinLineShift = 16.dp
-private val MaxLineShift = 36.dp
+private val MaxLineShift = 48.dp
 
 private val RenMessageCenter = DpOffset(x = 60.dp, y = 28.dp)
 
