@@ -2,6 +2,9 @@ package codes.chrishorner.personasns
 
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 data class Message(
   val sender: Sender,
@@ -20,20 +23,20 @@ enum class Sender(@DrawableRes val image: Int, val color: Color) {
 class MessagesState {
   private var count = 0
 
-  fun advance(): List<Message> {
+  fun advance(): ImmutableList<Message> {
     count++
 
     if (count > Messages.size) {
       count = 1
     }
 
-    return Messages.take(count)
+    return Messages.take(count).toImmutableList()
   }
 }
 
 // https://www.youtube.com/watch?v=Bfqeo056MwA
 // https://www.quotev.com/story/9496702/Persona-5-with-YN/43
-private val Messages = listOf(
+private val Messages = persistentListOf(
   Message(
     sender = Sender.Ann,
     text = "We have to find them tomorrow for sure. This is the only lead we have right now.",

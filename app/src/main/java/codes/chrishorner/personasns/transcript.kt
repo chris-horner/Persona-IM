@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastZip
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlin.random.Random
 
 @Composable
@@ -26,9 +29,9 @@ class Transcript internal constructor(private val density: Density) {
 
   private val messagesState = MessagesState()
   private val coordinates = mutableListOf<LineCoordinates>()
-  private val _entries = mutableStateOf(emptyList<Entry>())
+  private val _entries = mutableStateOf<ImmutableList<Entry>>(persistentListOf())
 
-  val entries: State<List<Entry>> = _entries
+  val entries: State<ImmutableList<Entry>> = _entries
 
   fun advance() {
     val messages = messagesState.advance()
@@ -52,9 +55,9 @@ class Transcript internal constructor(private val density: Density) {
       )
     }
 
-    _entries.value = messages.fastZip(coordinates) { message, lineCoordinates ->
-      Entry(message, lineCoordinates)
-    }
+    _entries.value = messages
+      .fastZip(coordinates) { message, lineCoordinates -> Entry(message, lineCoordinates) }
+      .toImmutableList()
   }
 
   private fun getMostRecentLineCoordinates(sender: Sender): LineCoordinates = with(density) {
