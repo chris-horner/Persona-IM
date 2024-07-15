@@ -52,12 +52,10 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
@@ -71,6 +69,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import codes.chrishorner.personasns.ui.theme.PersonaRed
+import kotlinx.collections.immutable.ImmutableList
 
 class MainActivity : ComponentActivity() {
 
@@ -105,40 +104,9 @@ class MainActivity : ComponentActivity() {
             label = "item_scale",
           )
 
-          val listState = rememberLazyListState()
           val entries = transcript.entries.value
-          val lastIndex = entries.lastIndex
 
-          LaunchedEffect(lastIndex) {
-            if (lastIndex > 0) listState.animateScrollToItem(lastIndex)
-          }
-
-          LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(Transcript.EntrySpacing),
-            state = listState,
-            contentPadding = WindowInsets.systemBars
-              .add(WindowInsets(top = 100.dp, bottom = 100.dp))
-              .asPaddingValues(),
-            modifier = Modifier.fillMaxSize()
-          ) {
-            itemsIndexed(entries) { index, entry ->
-              //listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index + 1 }
-              if (entry.message.sender == Sender.Ren) {
-                Reply(
-                  text = entry.message.text,
-                  modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
-                )
-              } else {
-                Entry(
-                  avatarImage = entry.message.sender.image,
-                  color = entry.message.sender.color,
-                  text = entry.message.text,
-                  modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
-                  // Need to draw _down_ from the current item to properly draw _behind_.
-                )
-              }
-            }
-          }
+          Transcript(entries)
 
           Image(
             painter = painterResource(R.drawable.logo_im),
@@ -157,6 +125,45 @@ class MainActivity : ComponentActivity() {
               .padding(16.dp)
           )
         }
+      }
+    }
+  }
+}
+
+@Composable
+private fun Transcript(entries: ImmutableList<Entry>) {
+  val listState = rememberLazyListState()
+  val lastIndex = entries.lastIndex
+
+  LaunchedEffect(lastIndex) {
+    if (lastIndex > 0) listState.animateScrollToItem(lastIndex)
+  }
+
+  LazyColumn(
+    verticalArrangement = Arrangement.spacedBy(Transcript.EntrySpacing),
+    state = listState,
+    contentPadding = WindowInsets.systemBars
+      .add(WindowInsets(top = 100.dp, bottom = 100.dp))
+      .asPaddingValues(),
+    modifier = Modifier.fillMaxSize()
+  ) {
+    itemsIndexed(
+      items = entries,
+      key = { index, entry -> "$entry${entries.getOrNull(index + 1)}" },
+    ) { index, entry ->
+      if (entry.message.sender == Sender.Ren) {
+        Reply(
+          text = entry.message.text,
+          modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
+        )
+      } else {
+        Entry(
+          avatarImage = entry.message.sender.image,
+          color = entry.message.sender.color,
+          text = entry.message.text,
+          modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
+          // Need to draw _down_ from the current item to properly draw _behind_.
+        )
       }
     }
   }
@@ -184,47 +191,6 @@ private fun NextButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
       painter = painterResource(R.drawable.next),
       contentDescription = "Next button",
     )
-  }
-}
-
-private val linePath = Path()
-
-private fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier {
-  if (entry2 == null) return this
-
-  return drawWithCache {
-    val topOffset = Transcript.getTopDrawingOffset(entry1)
-    val topLeft = entry1.lineCoordinates.leftPoint + topOffset
-    val topRight = entry1.lineCoordinates.rightPoint + topOffset
-
-    val bottomOffset = Transcript.getBottomDrawingOffset(entry2)
-    val bottomLeft = entry2.lineCoordinates.leftPoint + bottomOffset
-    val bottomRight = entry2.lineCoordinates.rightPoint + bottomOffset
-
-    val shadowPaint = Paint().apply {
-      this.color = Color.Black
-      alpha = 0.5f
-      asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
-    }
-
-    onDrawBehind {
-      with(linePath) {
-        reset()
-        moveTo(topLeft.x, topLeft.y)
-        lineTo(topRight.x, topRight.y)
-        lineTo(bottomRight.x, bottomRight.y)
-        lineTo(bottomLeft.x, bottomRight.y)
-        close()
-      }
-
-      translate(top = 16.dp.toPx()) {
-        drawIntoCanvas {
-          it.drawPath(linePath, shadowPaint)
-        }
-      }
-
-      drawPath(linePath, Color.Black)
-    }
   }
 }
 
@@ -271,7 +237,9 @@ private fun Entry(
           .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
       )
     },
-    modifier = Modifier.padding(horizontal = 8.dp).then(modifier)
+    modifier = Modifier
+      .padding(horizontal = 8.dp)
+      .then(modifier)
   )
 }
 
