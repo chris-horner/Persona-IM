@@ -4,12 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,7 +48,7 @@ class MainActivity : ComponentActivity() {
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
     setContent {
-      val transcript = rememberTranscript()
+      val transcript = rememberTranscriptState()
 
       RootContainer {
         Box(
@@ -67,16 +62,6 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
               .statusBarsPadding()
               .offset(y = (-16).dp)
-          )
-
-          val scale by rememberInfiniteTransition(label = "item_repeat").animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-              tween(durationMillis = 1_000),
-              repeatMode = RepeatMode.Reverse
-            ),
-            label = "item_scale",
           )
 
           val entries = transcript.entries.value
@@ -124,9 +109,7 @@ private fun Transcript(entries: ImmutableList<Entry>) {
   ) {
     itemsIndexed(
       items = entries,
-      key = { index, entry -> entry.message.text },
-      // TODO: Key calc should probably be this instead:
-      //  key = { index, entry -> "$entry${entries.getOrNull(index + 1)}" },
+      key = { _, entry -> entry.message.text },
     ) { index, entry ->
       if (entry.message.sender == Sender.Ren) {
         Reply(

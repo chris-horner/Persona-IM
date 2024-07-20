@@ -2,7 +2,6 @@ package codes.chrishorner.personasns
 
 import android.graphics.BlurMaskFilter
 import android.graphics.BlurMaskFilter.Blur.NORMAL
-import androidx.compose.animation.core.Animatable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawModifierNode
 import androidx.compose.ui.geometry.lerp
@@ -15,7 +14,6 @@ import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 
 fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier {
   return this then ConnectingLineElement(entry1, entry2)
@@ -39,12 +37,11 @@ private data class ConnectingLineElement(
 }
 
 private class LineNode(
-  var entry1: Entry,
-  var entry2: Entry?,
+  private var entry1: Entry,
+  private var entry2: Entry?,
 ) : DelegatingNode() {
 
   private val linePath = Path()
-  private val progress = Animatable(0f)
 
   private val drawWithCacheModifierNode = delegate(
     CacheDrawModifierNode {
@@ -64,8 +61,8 @@ private class LineNode(
       }
 
       onDrawBehind {
-        val currentBottomLeft = lerp(topLeft, bottomLeft, fraction = progress.value)
-        val currentBottomRight = lerp(topRight, bottomRight, fraction = progress.value)
+        val currentBottomLeft = lerp(topLeft, bottomLeft, fraction = entry1.lineProgress.value)
+        val currentBottomRight = lerp(topRight, bottomRight, fraction = entry1.lineProgress.value)
 
         with(linePath) {
           reset()
@@ -87,29 +84,9 @@ private class LineNode(
     }
   )
 
-  override fun onAttach() {
-    runAnimation()
-  }
-
   fun updateEntries(entry1: Entry, entry2: Entry?) {
     this.entry1 = entry1
     this.entry2 = entry2
     drawWithCacheModifierNode.invalidateDrawCache()
-    runAnimation()
-  }
-
-  private fun runAnimation() {
-    if (entry2 == null) {
-      coroutineScope.launch {
-        progress.snapTo(0f)
-      }
-      return
-    }
-
-    if (progress.isRunning || progress.value > 0f) return
-
-    coroutineScope.launch {
-      progress.animateTo(targetValue = 1f)
-    }
   }
 }
