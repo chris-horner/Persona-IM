@@ -150,7 +150,7 @@ data class LineCoordinates(
 )
 
 private val MinLineWidth = 44.dp
-private val MaxLineWidth = 66.dp
+private val MaxLineWidth = 60.dp
 
 private val MinLineShift = 16.dp
 private val MaxLineShift = 48.dp

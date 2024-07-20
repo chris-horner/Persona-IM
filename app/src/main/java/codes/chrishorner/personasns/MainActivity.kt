@@ -149,7 +149,9 @@ private fun Transcript(entries: ImmutableList<Entry>) {
   ) {
     itemsIndexed(
       items = entries,
-      key = { index, entry -> "$entry${entries.getOrNull(index + 1)}" },
+      key = { index, entry -> entry.message.text },
+      // TODO: Key calc should probably be this instead:
+      //  key = { index, entry -> "$entry${entries.getOrNull(index + 1)}" },
     ) { index, entry ->
       if (entry.message.sender == Sender.Ren) {
         Reply(

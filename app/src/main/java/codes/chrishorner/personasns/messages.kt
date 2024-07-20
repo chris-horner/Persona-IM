@@ -69,4 +69,20 @@ private val Messages = persistentListOf(
     sender = Sender.Ryuji,
     text = "Wouldn't the mafia get caught off guard if they had a cat coming to deliver for 'em?",
   ),
+  Message(
+    sender = Sender.Yusuke,
+    text = "In other words, Maaku will be going. I have no objections.",
+  ),
+  Message(
+    sender = Sender.Yusuke,
+    text = "Tricking people and using that as blackmail… These bastards are true cowards.",
+  ),
+  Message(
+    sender = Sender.Ann,
+    text = "It’s kinda scary to think people like that are all around us in this city...",
+  ),
+  Message(
+    sender = Sender.Ryuji,
+    text = "Well guys, we gotta brace ourselves. We’re up against a serious criminal here.",
+  ),
 )
