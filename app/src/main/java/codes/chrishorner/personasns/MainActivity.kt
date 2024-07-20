@@ -44,7 +44,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import codes.chrishorner.personasns.ui.theme.PersonaRed
 import kotlinx.collections.immutable.ImmutableList
 
 class MainActivity : ComponentActivity() {
