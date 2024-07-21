@@ -2,6 +2,7 @@ package codes.chrishorner.personasns
 
 import android.graphics.BlurMaskFilter
 import android.graphics.BlurMaskFilter.Blur.NORMAL
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 
@@ -73,6 +76,15 @@ fun Entry(
           .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
       )
     },
+    punctuation = {
+      if (entry.drawPunctuation) {
+        Image(
+          painter = painterResource(R.drawable.question_mark),
+          contentDescription = null,
+          modifier = Modifier.scale(entry.punctuationScale.value)
+        )
+      }
+    },
     modifier = Modifier
       .padding(horizontal = 8.dp)
       .then(modifier)
@@ -83,15 +95,21 @@ fun Entry(
 private fun EntryLayout(
   avatar: @Composable () -> Unit,
   text: @Composable () -> Unit,
+  punctuation: @Composable () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Layout(
     content = {
       avatar()
       text()
+      punctuation()
     },
     modifier = modifier,
-  ) { (avatarMeasurable, textMeasurable), constraints ->
+  ) { measurables, constraints ->
+    val avatarMeasurable = measurables[0]
+    val textMeasurable = measurables[1]
+    val punctuationMeasurable = measurables.getOrNull(2)
+
     val textOverlap = 18.dp.roundToPx()
     val textVerticalOffset = 4.dp.roundToPx()
 
@@ -99,6 +117,7 @@ private fun EntryLayout(
     val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textOverlap
     val textConstraints = constraints.copy(maxWidth = textMaxWidth)
     val textPlaceable = textMeasurable.measure(textConstraints)
+    val punctuationPlaceable = punctuationMeasurable?.measure(constraints)
 
     val width = avatarPlaceable.width + textPlaceable.width - textOverlap
     val height = maxOf(avatarPlaceable.height, textPlaceable.height)
@@ -107,6 +126,7 @@ private fun EntryLayout(
       val textY =
         (avatarPlaceable.height - textPlaceable.height - textVerticalOffset).coerceAtLeast(0)
       textPlaceable.place(avatarPlaceable.width - textOverlap, textY)
+      punctuationPlaceable?.place(width - 40.dp.roundToPx(), (-8).dp.roundToPx())
     }
   }
 }

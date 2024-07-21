@@ -36,6 +36,7 @@ fun rememberTranscriptState(): Transcript {
 data class Entry(
   val message: Message,
   val lineCoordinates: LineCoordinates,
+  val drawPunctuation: Boolean,
   /** Animated percentage progress of the black line connecting this message to the next. */
   val lineProgress: State<Float>,
   val avatarBackgroundScale: State<Float>,
@@ -43,6 +44,7 @@ data class Entry(
   val messageHorizontalScale: State<Float>,
   val messageVerticalScale: State<Float>,
   val messageTextAlpha: State<Float>,
+  val punctuationScale: State<Float>,
 )
 
 /**
@@ -171,6 +173,18 @@ class Transcript internal constructor(
           )
         }
       },
+      punctuationScale = Animatable(0f).apply {
+        if (message.text.endsWith('?')) {
+          coroutineScope.launch {
+            delay(150L * AnimationDurationScale)
+            snapTo(0.4f)
+            animateTo(
+              targetValue = 1f,
+              animationSpec = tween(durationMillis = 100 * AnimationDurationScale),
+            )
+          }
+        }
+      },
       lineCoordinates = lineCoordinates,
     )
   }
@@ -244,17 +258,20 @@ private class EntryState(
   val messageHorizontalScale: Animatable<Float, AnimationVector1D>,
   val messageVerticalScale: Animatable<Float, AnimationVector1D>,
   val messageTextAlpha: Animatable<Float, AnimationVector1D>,
+  val punctuationScale: Animatable<Float, AnimationVector1D>,
   var lineCoordinates: LineCoordinates,
 )
 
 private fun EntryState.toEntry() = Entry(
   message = message,
   lineCoordinates = lineCoordinates,
+  drawPunctuation = message.text.endsWith('?'),
   avatarBackgroundScale = avatarBackgroundScale.asState(),
   avatarForegroundScale = avatarForegroundScale.asState(),
   messageHorizontalScale = messageHorizontalScale.asState(),
   messageVerticalScale = messageVerticalScale.asState(),
   messageTextAlpha = messageTextAlpha.asState(),
+  punctuationScale = punctuationScale.asState(),
   lineProgress = lineProgress.asState(),
 )
 
