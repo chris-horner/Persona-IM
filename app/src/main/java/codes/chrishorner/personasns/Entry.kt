@@ -8,12 +8,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -45,13 +48,28 @@ fun Entry(
             }
 
             onDrawBehind {
-              drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
-              drawOutline(outerBox, color = Color.White)
+              scale(
+                scaleX = entry.messageHorizontalScale.value,
+                scaleY = entry.messageVerticalScale.value,
+                pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
+              ) {
+                drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
+                drawOutline(outerBox, color = Color.White)
+              }
+
               drawOutline(outerBoxStem, color = Color.White)
               drawOutline(innerBoxStem, color = Color.Black)
-              drawOutline(innerBox, color = Color.Black)
+
+              scale(
+                scaleX = entry.messageHorizontalScale.value,
+                scaleY = entry.messageVerticalScale.value,
+                pivot = Offset(x = innerBoxStem.bounds.width, y = getStemY(size.height)),
+              ) {
+                drawOutline(innerBox, color = Color.Black)
+              }
             }
           }
+          .alpha(entry.messageTextAlpha.value)
           .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
       )
     },
@@ -93,7 +111,6 @@ private fun EntryLayout(
   }
 }
 
-
 private fun Density.outerStem(): Shape = GenericShape { size, _ ->
   val verticalOrigin = getStemY(size.height)
 
@@ -106,7 +123,6 @@ private fun Density.outerStem(): Shape = GenericShape { size, _ ->
   lineTo(10.dp.toPx(), verticalOrigin - 20.dp.toPx())
   close()
 }
-
 
 private fun Density.innerStem(): Shape = GenericShape { size, _ ->
   val verticalOrigin = getStemY(size.height)

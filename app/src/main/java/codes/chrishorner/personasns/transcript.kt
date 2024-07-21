@@ -40,6 +40,9 @@ data class Entry(
   val lineProgress: State<Float>,
   val avatarBackgroundScale: State<Float>,
   val avatarForegroundScale: State<Float>,
+  val messageHorizontalScale: State<Float>,
+  val messageVerticalScale: State<Float>,
+  val messageTextAlpha: State<Float>,
 )
 
 /**
@@ -137,6 +140,37 @@ class Transcript internal constructor(
           )
         }
       },
+      messageHorizontalScale = Animatable(0.5f).apply {
+        coroutineScope.launch {
+          animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+              durationMillis = 280 * AnimationDurationScale,
+              easing = BetterEaseOutBack,
+            ),
+          )
+        }
+      },
+      messageVerticalScale = Animatable(0.8f).apply {
+        coroutineScope.launch {
+          animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+              durationMillis = 280 * AnimationDurationScale,
+              easing = BetterEaseOutBack,
+            ),
+          )
+        }
+      },
+      messageTextAlpha = Animatable(0f).apply {
+        coroutineScope.launch {
+          delay(150L * AnimationDurationScale)
+          animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 100 * AnimationDurationScale),
+          )
+        }
+      },
       lineCoordinates = lineCoordinates,
     )
   }
@@ -207,6 +241,9 @@ private class EntryState(
   val lineProgress: Animatable<Float, AnimationVector1D>,
   val avatarBackgroundScale: Animatable<Float, AnimationVector1D>,
   val avatarForegroundScale: Animatable<Float, AnimationVector1D>,
+  val messageHorizontalScale: Animatable<Float, AnimationVector1D>,
+  val messageVerticalScale: Animatable<Float, AnimationVector1D>,
+  val messageTextAlpha: Animatable<Float, AnimationVector1D>,
   var lineCoordinates: LineCoordinates,
 )
 
@@ -215,6 +252,9 @@ private fun EntryState.toEntry() = Entry(
   lineCoordinates = lineCoordinates,
   avatarBackgroundScale = avatarBackgroundScale.asState(),
   avatarForegroundScale = avatarForegroundScale.asState(),
+  messageHorizontalScale = messageHorizontalScale.asState(),
+  messageVerticalScale = messageVerticalScale.asState(),
+  messageTextAlpha = messageTextAlpha.asState(),
   lineProgress = lineProgress.asState(),
 )
 
