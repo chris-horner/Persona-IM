@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ class MainActivity : ComponentActivity() {
           Image(
             painter = painterResource(R.drawable.bg_splatter_background),
             contentDescription = null,
+            contentScale = ContentScale.FillWidth,
             modifier = Modifier
               .statusBarsPadding()
               .offset(y = (-16).dp)
