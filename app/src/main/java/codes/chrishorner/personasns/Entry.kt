@@ -2,7 +2,6 @@ package codes.chrishorner.personasns
 
 import android.graphics.BlurMaskFilter
 import android.graphics.BlurMaskFilter.Blur.NORMAL
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
@@ -21,16 +20,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Entry(
-  @DrawableRes avatarImage: Int,
-  color: Color,
-  text: String,
+  entry: Entry,
   modifier: Modifier = Modifier,
 ) {
   EntryLayout(
-    avatar = { Avatar(avatarImage, color) },
+    avatar = { Avatar(entry) },
     text = {
       Text(
-        text = text,
+        text = entry.message.text,
         style = MaterialTheme.typography.bodyMedium,
         color = Color.White,
         fontFamily = OptimaNova,

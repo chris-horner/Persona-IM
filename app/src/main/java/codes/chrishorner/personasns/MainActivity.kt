@@ -118,9 +118,7 @@ private fun Transcript(entries: ImmutableList<Entry>) {
         )
       } else {
         Entry(
-          avatarImage = entry.message.sender.image,
-          color = entry.message.sender.color,
-          text = entry.message.text,
+          entry,
           modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
           // Need to draw _down_ from the current item to properly draw _behind_.
         )

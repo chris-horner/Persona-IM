@@ -1,8 +1,8 @@
 package codes.chrishorner.personasns
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.runtime.Composable
@@ -10,32 +10,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Avatar(@DrawableRes avatarImage: Int, color: Color) {
+fun Avatar(entry: Entry) {
   Box(
     modifier = Modifier
       .size(Transcript.AvatarSize)
+      .scale(entry.avatarBackgroundScale.value)
       .drawBehind {
         drawOutline(Outline(avatarBlackBox()), Color.Black)
         drawOutline(Outline(avatarWhiteBox()), Color.White)
-        drawOutline(Outline(avatarColoredBox()), color)
+        drawOutline(Outline(avatarColoredBox()), entry.message.sender.color)
       }
       .clip(with(LocalDensity.current) { avatarClipBox() })
   ) {
     Image(
-      painter = painterResource(avatarImage),
+      painter = painterResource(entry.message.sender.image),
       contentDescription = null,
       modifier = Modifier
         .size(80.dp)
         .align(Alignment.TopEnd)
+        .padding(top = 4.dp, end = 8.dp)
+        .graphicsLayer {
+          transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 1.15f)
+          scaleX = entry.avatarForegroundScale.value
+          scaleY = entry.avatarForegroundScale.value
+        }
     )
   }
 }

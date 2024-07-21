@@ -2,6 +2,7 @@ package codes.chrishorner.personasns
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -19,6 +20,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -36,6 +38,8 @@ data class Entry(
   val lineCoordinates: LineCoordinates,
   /** Animated percentage progress of the black line connecting this message to the next. */
   val lineProgress: State<Float>,
+  val avatarBackgroundScale: State<Float>,
+  val avatarForegroundScale: State<Float>,
 )
 
 /**
@@ -109,6 +113,30 @@ class Transcript internal constructor(
       position = index,
       message = message,
       lineProgress = Animatable(initialValue = 0f),
+      avatarBackgroundScale = Animatable(initialValue = 0.6f).apply {
+        coroutineScope.launch {
+          animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+              durationMillis = 300 * AnimationDurationScale,
+              easing = BetterEaseOutBack,
+            ),
+          )
+        }
+      },
+      avatarForegroundScale = Animatable(0.0f).apply {
+        coroutineScope.launch {
+          delay(180L * AnimationDurationScale)
+          snapTo(0.8f)
+          animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+              durationMillis = 150 * AnimationDurationScale,
+              easing = BetterEaseOutBack,
+            ),
+          )
+        }
+      },
       lineCoordinates = lineCoordinates,
     )
   }
@@ -129,7 +157,12 @@ class Transcript internal constructor(
       rightPoint = entryState.lineCoordinates.rightPoint + horizontalOffset,
     )
 
-    coroutineScope.launch { entryState.lineProgress.animateTo(1f) }
+    coroutineScope.launch {
+      entryState.lineProgress.animateTo(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 180 * AnimationDurationScale)
+      )
+    }
   }
 
   // TODO: Consider moving out of companion object.
@@ -172,12 +205,16 @@ private class EntryState(
   val position: Int,
   val message: Message,
   val lineProgress: Animatable<Float, AnimationVector1D>,
+  val avatarBackgroundScale: Animatable<Float, AnimationVector1D>,
+  val avatarForegroundScale: Animatable<Float, AnimationVector1D>,
   var lineCoordinates: LineCoordinates,
 )
 
 private fun EntryState.toEntry() = Entry(
   message = message,
   lineCoordinates = lineCoordinates,
+  avatarBackgroundScale = avatarBackgroundScale.asState(),
+  avatarForegroundScale = avatarForegroundScale.asState(),
   lineProgress = lineProgress.asState(),
 )
 
