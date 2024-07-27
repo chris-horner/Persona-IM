@@ -66,7 +66,7 @@ fun Entry(
               scale(
                 scaleX = entry.messageHorizontalScale.value,
                 scaleY = entry.messageVerticalScale.value,
-                pivot = Offset(x = innerBoxStem.bounds.width, y = getStemY(size.height)),
+                pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
               ) {
                 drawOutline(innerBox, color = Color.Black)
               }

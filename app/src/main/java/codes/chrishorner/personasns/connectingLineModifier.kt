@@ -57,7 +57,7 @@ private class LineNode(
       val shadowPaint = Paint().apply {
         color = Color.Black
         alpha = 0.5f
-        asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
+        asFrameworkPaint().maskFilter = BlurMaskFilter(2.dp.toPx(), NORMAL)
       }
 
       onDrawBehind {
