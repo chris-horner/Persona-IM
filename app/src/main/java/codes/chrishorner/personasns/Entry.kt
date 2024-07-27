@@ -3,11 +3,14 @@ package codes.chrishorner.personasns
 import android.graphics.BlurMaskFilter
 import android.graphics.BlurMaskFilter.Blur.NORMAL
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
@@ -31,60 +34,7 @@ fun Entry(
 ) {
   EntryLayout(
     avatar = { Avatar(entry) },
-    text = {
-      Text(
-        text = entry.message.text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = Color.White,
-        fontFamily = OptimaNova,
-        modifier = Modifier
-          .drawWithCache {
-            val outerBoxStem = Outline(outerStem())
-            val outerBoxShape = outerBox()
-            val outerBox = Outline(outerBoxShape)
-            val innerBoxStem = Outline(innerStem())
-            val innerBox = Outline(innerBox())
-            val shadowPaint = Paint().apply {
-              this.color = Color.Black
-              alpha = 0.3f
-              asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
-            }
-
-            onDrawBehind {
-              scale(
-                scaleX = entry.messageHorizontalScale.value,
-                scaleY = entry.messageVerticalScale.value,
-                pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
-              ) {
-                drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
-                drawOutline(outerBox, color = Color.White)
-              }
-
-              drawOutline(outerBoxStem, color = Color.White)
-              drawOutline(innerBoxStem, color = Color.Black)
-
-              scale(
-                scaleX = entry.messageHorizontalScale.value,
-                scaleY = entry.messageVerticalScale.value,
-                pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
-              ) {
-                drawOutline(innerBox, color = Color.Black)
-              }
-            }
-          }
-          .alpha(entry.messageTextAlpha.value)
-          .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
-      )
-    },
-    punctuation = {
-      if (entry.drawPunctuation) {
-        Image(
-          painter = painterResource(R.drawable.question_mark),
-          contentDescription = null,
-          modifier = Modifier.scale(entry.punctuationScale.value)
-        )
-      }
-    },
+    textBox = { TextBox(entry) },
     modifier = Modifier
       .padding(horizontal = 8.dp)
       .then(modifier)
@@ -94,22 +44,16 @@ fun Entry(
 @Composable
 private fun EntryLayout(
   avatar: @Composable () -> Unit,
-  text: @Composable () -> Unit,
-  punctuation: @Composable () -> Unit,
+  textBox: @Composable () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   Layout(
     content = {
       avatar()
-      text()
-      punctuation()
+      textBox()
     },
     modifier = modifier,
-  ) { measurables, constraints ->
-    val avatarMeasurable = measurables[0]
-    val textMeasurable = measurables[1]
-    val punctuationMeasurable = measurables.getOrNull(2)
-
+  ) { (avatarMeasurable, textMeasurable), constraints ->
     val textOverlap = 18.dp.roundToPx()
     val textVerticalOffset = 4.dp.roundToPx()
 
@@ -117,7 +61,6 @@ private fun EntryLayout(
     val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textOverlap
     val textConstraints = constraints.copy(maxWidth = textMaxWidth)
     val textPlaceable = textMeasurable.measure(textConstraints)
-    val punctuationPlaceable = punctuationMeasurable?.measure(constraints)
 
     val width = avatarPlaceable.width + textPlaceable.width - textOverlap
     val height = maxOf(avatarPlaceable.height, textPlaceable.height)
@@ -126,7 +69,66 @@ private fun EntryLayout(
       val textY =
         (avatarPlaceable.height - textPlaceable.height - textVerticalOffset).coerceAtLeast(0)
       textPlaceable.place(avatarPlaceable.width - textOverlap, textY)
-      punctuationPlaceable?.place(width - 40.dp.roundToPx(), (-8).dp.roundToPx())
+    }
+  }
+}
+
+@Composable
+private fun TextBox(entry: Entry) {
+  Box {
+    Text(
+      text = entry.message.text,
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.White,
+      fontFamily = OptimaNova,
+      modifier = Modifier
+        .drawWithCache {
+          val outerBoxStem = Outline(outerStem())
+          val outerBoxShape = outerBox()
+          val outerBox = Outline(outerBoxShape)
+          val innerBoxStem = Outline(innerStem())
+          val innerBox = Outline(innerBox())
+          val shadowPaint = Paint().apply {
+            this.color = Color.Black
+            alpha = 0.3f
+            asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
+          }
+
+          onDrawBehind {
+            scale(
+              scaleX = entry.messageHorizontalScale.value,
+              scaleY = entry.messageVerticalScale.value,
+              pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
+            ) {
+              drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
+              drawOutline(outerBox, color = Color.White)
+            }
+
+            drawOutline(outerBoxStem, color = Color.White)
+            drawOutline(innerBoxStem, color = Color.Black)
+
+            scale(
+              scaleX = entry.messageHorizontalScale.value,
+              scaleY = entry.messageVerticalScale.value,
+              pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
+            ) {
+              drawOutline(innerBox, color = Color.Black)
+            }
+          }
+        }
+        .alpha(entry.messageTextAlpha.value)
+        .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
+    )
+
+    if (entry.drawPunctuation) {
+      Image(
+        painter = painterResource(R.drawable.question_mark),
+        contentDescription = null,
+        modifier = Modifier
+          .align(Alignment.TopEnd)
+          .offset(x = (-12).dp, y = (-16).dp)
+          .scale(entry.punctuationScale.value)
+      )
     }
   }
 }
