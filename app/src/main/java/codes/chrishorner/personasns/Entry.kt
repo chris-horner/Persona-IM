@@ -1,7 +1,5 @@
 package codes.chrishorner.personasns
 
-import android.graphics.BlurMaskFilter
-import android.graphics.BlurMaskFilter.Blur.NORMAL
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -17,16 +15,17 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 
+/**
+ * A message received in chat - one not sent by the player.
+ */
 @Composable
 fun Entry(
   entry: Entry,
@@ -90,11 +89,6 @@ private fun TextBox(entry: Entry) {
           val outerBox = Outline(outerBoxShape)
           val innerBoxStem = Outline(innerStem())
           val innerBox = Outline(innerBox())
-          val shadowPaint = Paint().apply {
-            this.color = Color.Black
-            alpha = 0.3f
-            asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
-          }
 
           onDrawBehind {
             scale(
@@ -102,7 +96,6 @@ private fun TextBox(entry: Entry) {
               scaleY = entry.messageVerticalScale.value,
               pivot = Offset(x = outerBoxStem.bounds.width, y = getStemY(size.height)),
             ) {
-              drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
               drawOutline(outerBox, color = Color.White)
             }
 

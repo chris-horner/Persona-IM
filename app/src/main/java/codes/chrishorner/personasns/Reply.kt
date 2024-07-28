@@ -1,7 +1,5 @@
 package codes.chrishorner.personasns
 
-import android.graphics.BlurMaskFilter
-import android.graphics.BlurMaskFilter.Blur.NORMAL
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,17 +9,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 
+/**
+ * A message sent in chat by the player.
+ */
 @Composable
-fun Reply(text: String, modifier: Modifier = Modifier) {
+fun Reply(entry: Entry, modifier: Modifier = Modifier) {
   Box(
     contentAlignment = Alignment.CenterEnd,
     modifier = modifier
@@ -29,7 +32,7 @@ fun Reply(text: String, modifier: Modifier = Modifier) {
       .padding(horizontal = 4.dp)
   ) {
     Text(
-      text = text,
+      text = entry.message.text,
       style = MaterialTheme.typography.bodyMedium,
       color = Color.Black,
       fontFamily = OptimaNova,
@@ -40,20 +43,22 @@ fun Reply(text: String, modifier: Modifier = Modifier) {
           val outerBox = Outline(outerBoxShape)
           val innerStem = Outline(replyInnerStem())
           val innerBox = Outline(replyInnerBox())
-          val shadowPaint = Paint().apply {
-            this.color = Color.Black
-            alpha = 0.3f
-            asFrameworkPaint().maskFilter = BlurMaskFilter(4.dp.toPx(), NORMAL)
-          }
 
           onDrawBehind {
-            drawIntoCanvas { it.drawOutline(outerBox, shadowPaint) }
-            drawOutline(outerBox, color = Color.Black)
-            drawOutline(outerStem, color = Color.Black)
-            drawOutline(innerStem, color = Color.White)
-            drawOutline(innerBox, color = Color.White)
+
+            scale(
+              scaleX = entry.messageHorizontalScale.value,
+              scaleY = entry.messageVerticalScale.value,
+              pivot = Offset(size.width, size.center.y)
+            ) {
+              drawOutline(outerBox, color = Color.Black)
+              drawOutline(outerStem, color = Color.Black)
+              drawOutline(innerStem, color = Color.White)
+              drawOutline(innerBox, color = Color.White)
+            }
           }
         }
+        .alpha(entry.messageTextAlpha.value)
         .padding(start = 44.dp, top = 20.dp, end = 40.dp, bottom = 20.dp)
     )
   }

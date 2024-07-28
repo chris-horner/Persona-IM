@@ -115,7 +115,7 @@ private fun Transcript(entries: ImmutableList<Entry>) {
     ) { index, entry ->
       if (entry.message.sender == Sender.Ren) {
         Reply(
-          text = entry.message.text,
+          entry = entry,
           modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
         )
       } else {
