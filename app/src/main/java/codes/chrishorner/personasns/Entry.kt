@@ -54,21 +54,23 @@ private fun EntryLayout(
     },
     modifier = modifier,
   ) { (avatarMeasurable, textMeasurable), constraints ->
-    val textOverlap = 18.dp.roundToPx()
-    val textVerticalOffset = 4.dp.roundToPx()
+    // How much the text box should overlap into the avatar (to account for the box's stem).
+    val textBoxOverlap = 18.dp.roundToPx()
+    // Make sure there's a bit of space between the text box and the top of the entry.
+    val textBoxVerticalPadding = 4.dp.roundToPx()
 
     val avatarPlaceable = avatarMeasurable.measure(constraints)
-    val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textOverlap
+    val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textBoxOverlap
     val textConstraints = constraints.copy(maxWidth = textMaxWidth)
     val textPlaceable = textMeasurable.measure(textConstraints)
 
-    val width = avatarPlaceable.width + textPlaceable.width - textOverlap
-    val height = maxOf(avatarPlaceable.height, textPlaceable.height)
+    val width = avatarPlaceable.width + textPlaceable.width - textBoxOverlap
+    val height = maxOf(avatarPlaceable.height, textPlaceable.height + textBoxVerticalPadding)
     layout(width, height) {
       avatarPlaceable.place(0, 0)
-      val textY =
-        (avatarPlaceable.height - textPlaceable.height - textVerticalOffset).coerceAtLeast(0)
-      textPlaceable.place(avatarPlaceable.width - textOverlap, textY)
+      val textBoxX = avatarPlaceable.width - textBoxOverlap
+      val textBoxY = (avatarPlaceable.height - textPlaceable.height).coerceAtLeast(textBoxVerticalPadding)
+      textPlaceable.place(textBoxX, textBoxY)
     }
   }
 }
@@ -140,7 +142,7 @@ private fun Density.outerStem(): Shape = GenericShape { size, _ ->
   lineTo(19.5.dp.toPx(), verticalOrigin - 37.2.dp.toPx())
   lineTo(20.8.dp.toPx(), verticalOrigin - 31.5.dp.toPx())
   lineTo(32.4.dp.toPx(), verticalOrigin - 39.3.dp.toPx())
-  lineTo(26.6.dp.toPx(), verticalOrigin - 15.8.dp.toPx())
+  lineTo(30.6.dp.toPx(), verticalOrigin - 15.8.dp.toPx())
   lineTo(11.7.dp.toPx(), verticalOrigin - 12.6.dp.toPx())
   lineTo(10.dp.toPx(), verticalOrigin - 20.dp.toPx())
   close()
@@ -152,19 +154,23 @@ private fun Density.innerStem(): Shape = GenericShape { size, _ ->
   moveTo(4.6.dp.toPx(), verticalOrigin - 22.2.dp.toPx())
   lineTo(17.dp.toPx(), verticalOrigin - 33.2.dp.toPx())
   lineTo(19.3.dp.toPx(), verticalOrigin - 28.1.dp.toPx())
-  lineTo(30.4.dp.toPx(), verticalOrigin - 32.7.dp.toPx())
-  lineTo(27.dp.toPx(), verticalOrigin - 21.4.dp.toPx())
+  lineTo(34.4.dp.toPx(), verticalOrigin - 36.5.dp.toPx())
+  lineTo(34.dp.toPx(), verticalOrigin - 21.4.dp.toPx())
   lineTo(14.4.dp.toPx(), verticalOrigin - 18.6.dp.toPx())
   lineTo(12.8.dp.toPx(), verticalOrigin - 25.4.dp.toPx())
   close()
 }
 
 private fun Density.getStemY(boxHeight: Float): Float {
-  return if (boxHeight > Transcript.AvatarSize.height.toPx()) {
-    boxHeight - 16.dp.roundToPx()
+  // The Y coordinate of the stem changes slightly depending on the height of the box.
+  val avatarHeight = Transcript.AvatarSize.height.toPx()
+  val offset = if (boxHeight > avatarHeight) {
+    16.dp.roundToPx()
   } else {
-    boxHeight - 4.dp.roundToPx()
+    20.dp.roundToPx()
   }
+
+  return avatarHeight - offset
 }
 
 private fun Density.outerBox(): Shape = GenericShape { size, _ ->
