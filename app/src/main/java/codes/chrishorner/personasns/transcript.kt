@@ -22,7 +22,6 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 @Composable
 fun rememberTranscriptState(): Transcript {
@@ -282,7 +281,3 @@ private val MinLineShift = 16.dp
 private val MaxLineShift = 48.dp
 
 private val RenMessageCenter = DpOffset(x = 60.dp, y = 28.dp)
-
-private fun randomBetween(start: Float, end: Float): Float {
-  return start + Random.nextFloat() * (end - start)
-}

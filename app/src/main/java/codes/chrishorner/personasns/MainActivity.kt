@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 class MainActivity : ComponentActivity() {
 
@@ -70,14 +72,20 @@ class MainActivity : ComponentActivity() {
 
           Transcript(entries)
 
-          Image(
-            painter = painterResource(R.drawable.logo_im),
-            contentDescription = null,
+          Row(
             modifier = Modifier
               .statusBarsPadding()
-              .height(100.dp)
-              .offset(x = 8.dp, y = (-4).dp),
-          )
+          ) {
+            Image(
+              painter = painterResource(R.drawable.logo_im),
+              contentDescription = null,
+              modifier = Modifier
+                .height(100.dp)
+                .offset(x = 8.dp, y = (-4).dp),
+            )
+
+            Portraits(Sender.entries.minus(Sender.Ren).toImmutableList())
+          }
 
           NextButton(
             onClick = { transcript.advance() },
