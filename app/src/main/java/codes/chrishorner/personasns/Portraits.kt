@@ -32,7 +32,7 @@ fun Portraits(senders: ImmutableList<Sender>) {
       with(resources) {
         // Pick an index at random to have a "dark avatar", where black is rendered behind the portrait.
         val darkAvatarIndex = Random.nextInt(senders.size)
-        senders.mapIndexed { index, sender ->
+        senders.shuffled().mapIndexed { index, sender ->
           sender.getDisplayModel(
             allowHorizontalOffset = index > 0,
             darkAvatar = darkAvatarIndex == index,
@@ -134,7 +134,7 @@ private fun Sender.getDisplayModel(
     close()
   }
 
-  val outerRotation = randomBetween(-8f, 2f)
+  val outerRotation = randomBetween(-12f, 2f)
   val middleRotation = outerRotation + randomBetween(-2f, 0f)
   val innerRotation = randomBetween(-2f, 0f)
 
@@ -149,7 +149,7 @@ private fun Sender.getDisplayModel(
     middleRotation = middleRotation,
     innerRotation = innerRotation,
     horizontalOffset = if (allowHorizontalOffset) {
-      randomBetween((-12).dp.toPx(), (-8).dp.toPx())
+      randomBetween((-14).dp.toPx(), (-12).dp.toPx())
     } else {
       0f
     },
