@@ -134,6 +134,10 @@ private fun Transcript(entries: ImmutableList<Entry>) {
         )
       }
     }
+
+    item {
+      TypingIndicator()
+    }
   }
 }
 
