@@ -130,7 +130,7 @@ class Transcript internal constructor(
       },
       avatarForegroundScale = Animatable(0.0f).apply {
         coroutineScope.launch {
-          delay(180L * AnimationDurationScale)
+          delay(160L * AnimationDurationScale)
           snapTo(0.8f)
           animateTo(
             targetValue = 1f,
@@ -141,12 +141,12 @@ class Transcript internal constructor(
           )
         }
       },
-      messageHorizontalScale = Animatable(0.5f).apply {
+      messageHorizontalScale = Animatable(0.3f).apply {
         coroutineScope.launch {
           animateTo(
             targetValue = 1f,
             animationSpec = tween(
-              durationMillis = 280 * AnimationDurationScale,
+              durationMillis = 180 * AnimationDurationScale,
               easing = BetterEaseOutBack,
             ),
           )
@@ -157,7 +157,7 @@ class Transcript internal constructor(
           animateTo(
             targetValue = 1f,
             animationSpec = tween(
-              durationMillis = 280 * AnimationDurationScale,
+              durationMillis = 180 * AnimationDurationScale,
               easing = BetterEaseOutBack,
             ),
           )
@@ -165,17 +165,17 @@ class Transcript internal constructor(
       },
       messageTextAlpha = Animatable(0f).apply {
         coroutineScope.launch {
-          delay(150L * AnimationDurationScale)
+          delay(100L * AnimationDurationScale)
           animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 100 * AnimationDurationScale),
+            animationSpec = tween(durationMillis = 130 * AnimationDurationScale),
           )
         }
       },
       punctuationScale = Animatable(0f).apply {
         if (message.text.endsWith('?')) {
           coroutineScope.launch {
-            delay(150L * AnimationDurationScale)
+            delay(130L * AnimationDurationScale)
             snapTo(0.4f)
             animateTo(
               targetValue = 1f,
