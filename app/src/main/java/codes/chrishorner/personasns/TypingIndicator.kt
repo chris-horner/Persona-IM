@@ -1,10 +1,13 @@
 package codes.chrishorner.personasns
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +19,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.platform.LocalDensity
@@ -38,30 +42,45 @@ fun TypingIndicator(
   val rotation = remember { randomBetween(-6f, 12f) }
   val dotState = rememberDotsState()
 
+  val scaleAnimation = remember { Animatable(initialValue = 0f) }
+  LaunchedEffect(Unit) {
+    delay(180L * AnimationDurationScale)
+    scaleAnimation.snapTo(0.6f)
+    scaleAnimation.animateTo(
+      targetValue = 1f,
+      animationSpec = tween(
+        durationMillis = 116 * AnimationDurationScale,
+        easing = BetterEaseOutBack,
+      ),
+    )
+  }
+
   Box(
     contentAlignment = Alignment.Center,
     modifier = modifier
       .size(Transcript.AvatarSize)
-      .padding(start = 16.dp),
+      .padding(start = 16.dp)
   ) {
     Image(
       painter = painterResource(R.drawable.typing_bubble),
       contentDescription = null,
       modifier = Modifier
         .drawWithContent {
-          rotate(rotation) {
-            this@drawWithContent.drawContent()
-          }
-
-          translate(left = center.x - 4.dp.toPx(), top = center.y) {
-            if (dotState.dot1) drawPath(dot1, PersonaRed)
-
-            translate(left = 12.dp.toPx()) {
-              if (dotState.dot2) drawPath(dot2, PersonaRed)
+          scale(scaleAnimation.value) {
+            rotate(rotation) {
+              this@drawWithContent.drawContent()
             }
 
-            translate(left = 24.dp.toPx()) {
-              if (dotState.dot3) drawPath(dot3, PersonaRed)
+            translate(left = center.x - 4.dp.toPx(), top = center.y) {
+              if (dotState.dot1) drawPath(dot1, PersonaRed)
+
+              translate(left = 12.dp.toPx()) {
+                if (dotState.dot2) drawPath(dot2, PersonaRed)
+              }
+
+              translate(left = 24.dp.toPx()) {
+                if (dotState.dot3) drawPath(dot3, PersonaRed)
+              }
             }
           }
         }
