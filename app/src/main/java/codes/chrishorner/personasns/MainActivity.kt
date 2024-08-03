@@ -5,9 +5,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -103,10 +106,20 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun Transcript(entries: ImmutableList<Entry>) {
   val listState = rememberLazyListState()
-  val lastIndex = entries.lastIndex
+  val totalItemCount by remember { derivedStateOf { listState.layoutInfo.totalItemsCount } }
 
-  LaunchedEffect(lastIndex) {
-    if (lastIndex > 0) listState.animateScrollToItem(lastIndex)
+  LaunchedEffect(totalItemCount) {
+    val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.last()
+    // animateScrollToItem isn't super smooth, so if the newly added item is visible, then animate
+    // manually with a tween.
+    if (lastVisibleItem.index == totalItemCount - 1) {
+      listState.animateScrollBy(
+        value = lastVisibleItem.size.toFloat() + listState.layoutInfo.afterContentPadding,
+        animationSpec = tween(durationMillis = 280),
+      )
+    } else {
+      listState.animateScrollToItem(totalItemCount - 1)
+    }
   }
 
   LazyColumn(
