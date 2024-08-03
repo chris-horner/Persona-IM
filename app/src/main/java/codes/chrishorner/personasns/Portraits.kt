@@ -129,7 +129,7 @@ private fun Sender.getDisplayModel(
   val innerPath = Path().apply {
     moveTo(innerOffset(), innerOffset())
     lineTo(size.width - innerOffset(), innerOffset())
-    lineTo(size.width - innerOffset(), size.height - innerOffset())
+    lineTo(size.width - innerOffset(), size.height - innerOffset() - 1.dp.toPx())
     lineTo(innerOffset(), size.height - innerOffset())
     close()
   }
