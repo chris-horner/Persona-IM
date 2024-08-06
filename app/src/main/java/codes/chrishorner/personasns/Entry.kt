@@ -56,19 +56,28 @@ private fun EntryLayout(
     // How much the text box should overlap into the avatar (to account for the box's stem).
     val textBoxOverlap = 18.dp.roundToPx()
     // Make sure there's a bit of space between the text box and the top of the entry.
-    val textBoxVerticalPadding = 4.dp.roundToPx()
+    val textBoxTopPadding = 4.dp.roundToPx()
 
     val avatarPlaceable = avatarMeasurable.measure(constraints)
     val textMaxWidth = constraints.maxWidth - avatarPlaceable.width + textBoxOverlap
     val textConstraints = constraints.copy(maxWidth = textMaxWidth)
     val textPlaceable = textMeasurable.measure(textConstraints)
 
+    val textWithPadding = textPlaceable.height + textBoxTopPadding
     val width = avatarPlaceable.width + textPlaceable.width - textBoxOverlap
-    val height = maxOf(avatarPlaceable.height, textPlaceable.height + textBoxVerticalPadding)
+    val height = maxOf(avatarPlaceable.height, textWithPadding)
     layout(width, height) {
       avatarPlaceable.place(0, 0)
       val textBoxX = avatarPlaceable.width - textBoxOverlap
-      val textBoxY = (avatarPlaceable.height - textPlaceable.height).coerceAtLeast(textBoxVerticalPadding)
+      val textBoxY = if (textWithPadding > avatarPlaceable.height) {
+        // If the text box is taller than the avatar, anchor it to the top of the layout - plus
+        // some padding.
+        textBoxTopPadding
+      } else {
+        // Otherwise anchor the text box to the bottom of the avatar - minus some padding.
+        height - textPlaceable.height - 6.dp.roundToPx()
+      }
+
       textPlaceable.place(textBoxX, textBoxY)
     }
   }
@@ -154,16 +163,19 @@ private fun Density.innerStem(): Shape = GenericShape { size, _ ->
   close()
 }
 
-private fun Density.getStemY(boxHeight: Float): Float {
-  // The Y coordinate of the stem changes slightly depending on the height of the box.
+// The Y coordinate of the stem changes depending on the height of the text box.
+private fun Density.getStemY(textBoxHeight: Float): Float {
   val avatarHeight = Transcript.AvatarSize.height.toPx()
-  val offset = if (boxHeight > avatarHeight) {
-    16.dp.roundToPx()
-  } else {
-    20.dp.roundToPx()
-  }
 
-  return avatarHeight - offset
+  return if (textBoxHeight + 4.dp.toPx() > avatarHeight) {
+    // If the box (plus some padding) is greater than the avatar's size, then we can assume the text
+    // box is anchored to the top of the entry layout. Take the avatar height and minus some size.
+    avatarHeight - 16.dp.toPx()
+  } else {
+    // However if the box is smaller, we know it's anchored to the bottom of the layout. Take the
+    // total box height and minus some size.
+    textBoxHeight - 5.dp.toPx()
+  }
 }
 
 private fun Density.outerBox(): Shape = GenericShape { size, _ ->
