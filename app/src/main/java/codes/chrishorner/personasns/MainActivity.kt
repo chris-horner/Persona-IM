@@ -109,7 +109,7 @@ private fun Transcript(entries: ImmutableList<Entry>) {
   val totalItemCount by remember { derivedStateOf { listState.layoutInfo.totalItemsCount } }
 
   LaunchedEffect(totalItemCount) {
-    val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.last()
+    val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@LaunchedEffect
     // animateScrollToItem isn't super smooth, so if the newly added item is visible, then animate
     // manually with a tween.
     if (lastVisibleItem.index == totalItemCount - 1) {
