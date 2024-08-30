@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,7 +32,6 @@ fun rememberTranscriptState(): Transcript {
 }
 
 /** A message in the transcript with every needed for rendering. */
-@Stable
 data class Entry(
   val message: Message,
   val lineCoordinates: LineCoordinates,
@@ -66,7 +66,7 @@ class Transcript internal constructor(
   /** An associative array of states kept in sync with [messagesState]. */
   private val entryStates = mutableListOf<EntryState>()
   private val _entries = mutableStateOf<ImmutableList<Entry>>(persistentListOf())
-  val entries: State<ImmutableList<Entry>> = _entries
+  val entries: ImmutableList<Entry> by _entries
 
   fun advance() {
 

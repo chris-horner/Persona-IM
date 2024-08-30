@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
               .offset(y = (-16).dp)
           )
 
-          val entries = transcript.entries.value
+          val entries = transcript.entries
 
           Transcript(entries)
 
