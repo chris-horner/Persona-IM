@@ -94,42 +94,15 @@ private fun rememberDots(): ImmutableList<Path> {
 
   return remember(density) {
     with(density) {
-      val dot1 = parsePath(
-        "M2.9717,-0C5.7391,-0 6.233,2.2052 6.233,3.9155C6.233,5.6253 4.3672,6.1204 3.1285,6.1204C1.4861,6.1204 0.0005,4.9279 0.0005,3.2852C0.0005,1.6428 1.2392,-0 2.9717,-0Z"
-      )
-      val dot2 = parsePath(
-        "M2.9715,0.0005C5.198,0.0005 6.0525,1.8907 6.0525,3.3081C6.0525,4.7259 4.6139,5.9861 3.0617,5.9861C1.5094,5.9861 0.0003,4.6357 0.0003,3.3308C0.0003,2.0255 1.1684,0.0005 2.9715,0.0005Z"
-      )
-      val dot3 = parsePath(
-        "M3.1075,-0C4.7029,-0 6.0082,2.0253 6.0082,3.3079C6.0082,4.5905 4.6127,5.648 3.084,5.648C1.5514,5.648 -0.0009,4.478 -0.0009,3.1053C-0.0009,1.7325 1.1045,-0 3.1075,-0Z"
-      )
+      val dot1 = "M2.9717,-0C5.7391,-0 6.233,2.2052 6.233,3.9155C6.233,5.6253 4.3672,6.1204 3.1285,6.1204C1.4861,6.1204 0.0005,4.9279 0.0005,3.2852C0.0005,1.6428 1.2392,-0 2.9717,-0Z".asPath()
+      val dot2 = "M2.9715,0.0005C5.198,0.0005 6.0525,1.8907 6.0525,3.3081C6.0525,4.7259 4.6139,5.9861 3.0617,5.9861C1.5094,5.9861 0.0003,4.6357 0.0003,3.3308C0.0003,2.0255 1.1684,0.0005 2.9715,0.0005Z".asPath()
+      val dot3 = "M3.1075,-0C4.7029,-0 6.0082,2.0253 6.0082,3.3079C6.0082,4.5905 4.6127,5.648 3.084,5.648C1.5514,5.648 -0.0009,4.478 -0.0009,3.1053C-0.0009,1.7325 1.1045,-0 3.1075,-0Z".asPath()
 
       persistentListOf(dot1, dot2, dot3)
     }
   }
 }
 
-/**
- * Takes an SVG string and returns a [Path]. If [width] and [height] are not provided, then it's
- * assumed that the intrinsic width and height of the path's bounds are in [Dp].
- */
-private fun Density.parsePath(
-  pathData: String,
-  width: Dp = Dp.Unspecified,
-  height: Dp = Dp.Unspecified,
-): Path {
-  val path = PathParser().parsePathString(pathData).toPath()
-  val bounds = path.getBounds()
-  val widthPx = width.takeOrElse { bounds.width.dp }.toPx()
-  val heightPx = height.takeOrElse { bounds.height.dp }.toPx()
-  val matrix = Matrix().apply {
-    translate(x = bounds.center.x, y = bounds.center.y)
-    scale(x = widthPx / bounds.width, y = heightPx / bounds.height)
-  }
-
-  path.transform(matrix)
-  return path
-}
 
 @Composable
 private fun rememberDotsState(): DotsState {
