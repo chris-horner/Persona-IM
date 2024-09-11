@@ -20,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 
+/**
+ * Scrollable list of messages - including the background line connecting each entry.
+ */
 @Composable
 fun Transcript(entries: ImmutableList<Entry>) {
   val listState = rememberLazyListState()
@@ -60,7 +63,6 @@ fun Transcript(entries: ImmutableList<Entry>) {
         Entry(
           entry,
           modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
-          // Need to draw _down_ from the current item to properly draw _behind_.
         )
       }
     }

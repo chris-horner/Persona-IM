@@ -1,6 +1,5 @@
 package codes.chrishorner.personasns
 
-import android.graphics.Outline
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -22,6 +21,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 
+/**
+ * A sender's portrait and background image - to be shown next to a message they sent.
+ */
 @Composable
 fun Avatar(entry: Entry) {
   Box(

@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.random.Random
 
+/**
+ * Collection of portraits to show the current participants of the conversation.
+ */
 @Composable
 fun Portraits(senders: ImmutableList<Sender>) {
   val density = LocalDensity.current
@@ -30,7 +33,8 @@ fun Portraits(senders: ImmutableList<Sender>) {
   val portraitDisplayModels = remember(senders, density, resources) {
     with(density) {
       with(resources) {
-        // Pick an index at random to have a "dark avatar", where black is rendered behind the portrait.
+        // Pick an index at random to have a "dark avatar", where black is rendered behind the
+        // portrait.
         val darkAvatarIndex = Random.nextInt(senders.size)
         senders.shuffled().mapIndexed { index, sender ->
           sender.getDisplayModel(
@@ -49,6 +53,7 @@ fun Portraits(senders: ImmutableList<Sender>) {
   ) {
     var stride = 0f
 
+    // We need to draw _all_ the black backgrounds first.
     for (model in portraitDisplayModels) {
       stride += model.horizontalOffset
 
@@ -68,6 +73,7 @@ fun Portraits(senders: ImmutableList<Sender>) {
 
     stride = 0f
 
+    // Then draw the white part of the background in a separate loop, since these can overlap.
     for (model in portraitDisplayModels) {
       stride += model.horizontalOffset
 

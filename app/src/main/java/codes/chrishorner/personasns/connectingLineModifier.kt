@@ -12,6 +12,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
 
+/**
+ * Draws a black line from `entry` to `entry2` (if it exists).
+ */
 fun Modifier.drawConnectingLine(entry1: Entry, entry2: Entry?): Modifier {
   if (entry2 == null) return this
 

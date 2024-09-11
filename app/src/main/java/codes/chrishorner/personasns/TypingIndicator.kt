@@ -29,6 +29,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Animated dots inside of a speech bubble to indicate that someone is "typing".
+ */
 @Composable
 fun TypingIndicator(
   modifier: Modifier = Modifier,

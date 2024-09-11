@@ -20,6 +20,10 @@ enum class Sender(@DrawableRes val image: Int, val color: Color) {
   Ren(image = -1, color = Color.Unspecified),
 }
 
+/**
+ * Kind of like the "business logic" of the app - put into a simple class for the purposes of
+ * this demo app.
+ */
 class MessagesState {
   private var count = 0
 
@@ -34,8 +38,6 @@ class MessagesState {
   }
 }
 
-// https://www.youtube.com/watch?v=Bfqeo056MwA
-// https://www.quotev.com/story/9496702/Persona-5-with-YN/43
 private val Messages = persistentListOf(
   Message(
     sender = Sender.Ann,

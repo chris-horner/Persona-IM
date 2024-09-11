@@ -59,6 +59,10 @@ data class LineCoordinates(
   val rightPoint: Offset,
 )
 
+/**
+ * Responsible for keeping track of all the current entries in the transcript, and animating them
+ * over time.
+ */
 @Stable
 class TranscriptState internal constructor(
   private val density: Density,
