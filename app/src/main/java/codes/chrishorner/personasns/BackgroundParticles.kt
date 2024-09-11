@@ -25,6 +25,9 @@ import androidx.compose.ui.util.fastForEach
 import kotlin.math.sin
 import kotlin.random.Random
 
+/**
+ * Animates snowflakes or cherry blossom petals - depending on the season.
+ */
 @Composable
 fun BackgroundParticles(season: Season, modifier: Modifier = Modifier) {
   val state = remember { ParticlesState() }
