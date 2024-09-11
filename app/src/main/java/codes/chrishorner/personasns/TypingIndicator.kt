@@ -53,7 +53,7 @@ fun TypingIndicator(
   Box(
     contentAlignment = Alignment.Center,
     modifier = modifier
-      .size(Transcript.AvatarSize)
+      .size(TranscriptSizes.AvatarSize)
       .padding(start = 16.dp)
   ) {
     Image(

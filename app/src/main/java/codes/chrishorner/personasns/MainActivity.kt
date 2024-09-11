@@ -125,7 +125,7 @@ private fun Transcript(entries: ImmutableList<Entry>) {
   }
 
   LazyColumn(
-    verticalArrangement = Arrangement.spacedBy(Transcript.EntrySpacing),
+    verticalArrangement = Arrangement.spacedBy(TranscriptSizes.EntrySpacing),
     state = listState,
     contentPadding = WindowInsets.systemBars
       .add(WindowInsets(top = 100.dp, bottom = 100.dp))

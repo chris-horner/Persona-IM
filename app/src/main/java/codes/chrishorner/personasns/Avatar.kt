@@ -1,5 +1,6 @@
 package codes.chrishorner.personasns
 
+import android.graphics.Outline
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.dp
 fun Avatar(entry: Entry) {
   Box(
     modifier = Modifier
-      .size(Transcript.AvatarSize)
+      .size(TranscriptSizes.AvatarSize)
       .scale(entry.avatarBackgroundScale.value)
       .drawBehind {
         drawOutline(Outline(avatarBlackBox()), Color.Black)

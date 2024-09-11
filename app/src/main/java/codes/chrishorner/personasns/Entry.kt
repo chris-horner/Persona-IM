@@ -165,7 +165,7 @@ private fun Density.innerStem(): Shape = GenericShape { size, _ ->
 
 // The Y coordinate of the stem changes depending on the height of the text box.
 private fun Density.getStemY(textBoxHeight: Float): Float {
-  val avatarHeight = Transcript.AvatarSize.height.toPx()
+  val avatarHeight = TranscriptSizes.AvatarSize.height.toPx()
 
   return if (textBoxHeight + 4.dp.toPx() > avatarHeight) {
     // If the box (plus some padding) is greater than the avatar's size, then we can assume the text

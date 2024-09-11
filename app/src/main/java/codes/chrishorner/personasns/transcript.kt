@@ -17,6 +17,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import codes.chrishorner.personasns.TranscriptSizes.MaxLineShift
+import codes.chrishorner.personasns.TranscriptSizes.MaxLineWidth
+import codes.chrishorner.personasns.TranscriptSizes.MinLineShift
+import codes.chrishorner.personasns.TranscriptSizes.MinLineWidth
+import codes.chrishorner.personasns.TranscriptSizes.RenMessageCenter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -25,10 +30,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun rememberTranscriptState(): Transcript {
+fun rememberTranscriptState(): TranscriptState {
   val density = LocalDensity.current
   val coroutineScope = rememberCoroutineScope()
-  return remember(density) { Transcript(density, coroutineScope) }
+  return remember(density) { TranscriptState(density, coroutineScope) }
 }
 
 /** A message in the transcript with every needed for rendering. */
@@ -54,9 +59,8 @@ data class LineCoordinates(
   val rightPoint: Offset,
 )
 
-// TODO: Rename to TranscriptState
 @Stable
-class Transcript internal constructor(
+class TranscriptState internal constructor(
   private val density: Density,
   private val coroutineScope: CoroutineScope,
 ) {
@@ -104,8 +108,8 @@ class Transcript internal constructor(
       }
 
       else -> {
-        val leftX = (AvatarSize.width.toPx() / 2f) - (width / 2f)
-        val y = AvatarSize.height.toPx() / 2f
+        val leftX = (TranscriptSizes.AvatarSize.width.toPx() / 2f) - (width / 2f)
+        val y = TranscriptSizes.AvatarSize.height.toPx() / 2f
         LineCoordinates(
           leftPoint = Offset(leftX, y),
           rightPoint = Offset(leftX + width, y),
@@ -211,35 +215,39 @@ class Transcript internal constructor(
       )
     }
   }
+}
 
-  // TODO: Consider moving out of companion object.
-  companion object {
-    val AvatarSize = DpSize(110.dp, 90.dp)
-    val EntrySpacing = 16.dp
+object TranscriptSizes {
+  val AvatarSize = DpSize(110.dp, 90.dp)
+  val EntrySpacing = 16.dp
+  val RenMessageCenter = DpOffset(x = 60.dp, y = 28.dp)
+  val MinLineShift = 16.dp
+  val MaxLineShift = 48.dp
+  val MinLineWidth = 44.dp
+  val MaxLineWidth = 60.dp
 
-    context(CacheDrawScope)
-    fun getTopDrawingOffset(entry: Entry): Offset {
-      return when (entry.message.sender) {
-        Sender.Ren -> {
-          val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
-          Offset(x = horizontalShift, y = 0f)
-        }
-
-        else -> Offset(x = 0f, y = 0f)
+  context(CacheDrawScope)
+  fun getTopDrawingOffset(entry: Entry): Offset {
+    return when (entry.message.sender) {
+      Sender.Ren -> {
+        val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+        Offset(x = horizontalShift, y = 0f)
       }
+
+      else -> Offset(x = 0f, y = 0f)
     }
+  }
 
-    context(CacheDrawScope)
-    fun getBottomDrawingOffset(entry: Entry): Offset {
-      val verticalShift = size.height + EntrySpacing.toPx()
-      return when (entry.message.sender) {
-        Sender.Ren -> {
-          val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
-          Offset(x = horizontalShift, y = verticalShift)
-        }
-
-        else -> Offset(x = 0f, y = verticalShift)
+  context(CacheDrawScope)
+  fun getBottomDrawingOffset(entry: Entry): Offset {
+    val verticalShift = size.height + EntrySpacing.toPx()
+    return when (entry.message.sender) {
+      Sender.Ren -> {
+        val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+        Offset(x = horizontalShift, y = verticalShift)
       }
+
+      else -> Offset(x = 0f, y = verticalShift)
     }
   }
 }
@@ -273,11 +281,3 @@ private fun EntryState.toEntry() = Entry(
   punctuationScale = punctuationScale.asState(),
   lineProgress = lineProgress.asState(),
 )
-
-private val MinLineWidth = 44.dp
-private val MaxLineWidth = 60.dp
-
-private val MinLineShift = 16.dp
-private val MaxLineShift = 48.dp
-
-private val RenMessageCenter = DpOffset(x = 60.dp, y = 28.dp)
