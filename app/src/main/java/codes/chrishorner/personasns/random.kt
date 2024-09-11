@@ -9,6 +9,10 @@ fun randomBetween(start: Float, end: Float): Float {
   return start + Random.nextFloat() * (end - start)
 }
 
+fun randomBetween(start: Dp, end: Dp): Dp {
+  return randomBetween(start.value, end.value).dp
+}
+
 fun Density.randomPxBetween(start: Dp, end: Dp): Float {
-  return randomBetween(start.value, end.value).dp.toPx()
+  return randomBetween(start, end).toPx()
 }
