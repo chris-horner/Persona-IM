@@ -62,6 +62,9 @@ class MainActivity : ComponentActivity() {
             .fillMaxSize()
             .background(color = PersonaRed)
         ) {
+          // TODO: Wire up a way to change season.
+          BackgroundParticles(season = Season.NONE)
+
           Image(
             painter = painterResource(R.drawable.bg_splatter_background),
             contentDescription = null,
@@ -72,7 +75,6 @@ class MainActivity : ComponentActivity() {
           )
 
           val entries = transcript.entries
-
           Transcript(entries)
 
           Row(
