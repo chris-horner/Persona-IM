@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -107,10 +108,7 @@ private fun NextButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
   Box(
     modifier = modifier
-      .graphicsLayer {
-        scaleX = scale
-        scaleY = scale
-      }
+      .scale(scale)
       .clickable(
         interactionSource = interaction,
         indication = null,
