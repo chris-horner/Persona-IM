@@ -1,21 +1,29 @@
 # Persona IM
 
+<img width="20%" src="https://github.com/user-attachments/assets/297cb21b-415f-4c9b-a258-1181c63c1b95" align="right">
+
 A reimplementation of the instant messaging app seen in Persona 5 for Android using Compose UI.
 
 > [!NOTE]  
 > This is _not_ a functioning messaging app. It simulates a single conversation to demonstrate how such an app would be implemented in Compose UI.
+
+### Copyright
+
+©ATLUS ©SEGA
+
+All art and character designs in this repository are the property of Atlus Co., Ltd. Material is used for educational purposes only.
+
+### Additional Resources
+
+This app was made for a presentation DroidKaigi 2024. Slides can be [found here on Speaker Deck](https://speakerdeck.com/chrishorner/creative-compose-ui). A link to the recording will be added here once it's available online.
+
+### Video
 
 https://github.com/user-attachments/assets/17c19de3-6a79-42fb-a312-7a7bbd4b3648
 
 ### Reference
 
 https://github.com/user-attachments/assets/953991c2-a559-4103-8d8f-3bd9d0415f9d
-
-## Copyright
-
-©ATLUS ©SEGA
-
-All art and character designs in this repository are the property of Atlus Co., Ltd. Material is used for educational purposes only.
 
 ## License
 
