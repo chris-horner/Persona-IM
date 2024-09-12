@@ -157,6 +157,8 @@ private class ParticlesState {
       if (field != value) {
         field = value
         initialized = false
+        pool.addAll(active)
+        active.clear()
       }
     }
 
@@ -165,8 +167,6 @@ private class ParticlesState {
 
   fun update(time: Long, worldSize: DpSize) {
     if (!initialized) {
-      pool.addAll(active)
-      active.clear()
       repeat(START_PARTICLE_COUNT) { spawnParticle(worldSize, spawnInBounds = true) }
       initialized = true
     }

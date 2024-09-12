@@ -26,7 +26,7 @@ import kotlin.random.Random
  * Collection of portraits to show the current participants of the conversation.
  */
 @Composable
-fun Portraits(senders: ImmutableList<Sender>) {
+fun Portraits(senders: ImmutableList<Sender>, modifier: Modifier = Modifier) {
   val density = LocalDensity.current
   val resources = LocalContext.current.resources
 
@@ -47,9 +47,7 @@ fun Portraits(senders: ImmutableList<Sender>) {
   }
 
   Canvas(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(PortraitSize.height)
+    modifier = modifier.height(PortraitSize.height),
   ) {
     var stride = 0f
 
