@@ -17,7 +17,11 @@ All art and character designs in this repository are the property of Atlus Co., 
 
 ### Additional Resources
 
-This app was made for a presentation DroidKaigi 2024. Slides can be [found here on Speaker Deck](https://speakerdeck.com/chrishorner/creative-compose-ui). A link to the recording will be added here once it's available online.
+This app was made for a presentation DroidKaigi 2024. Slides in both English and Japanese can be [found here on Speaker Deck](https://speakerdeck.com/chrishorner/creative-compose-ui). A recording of the presentation is available here on Youtube:
+
+---
+
+[![YouTube](https://github.com/user-attachments/assets/c57e6517-3cfd-4f6d-abb9-7b4e1168d1ef)](https://www.youtube.com/watch?v=eWDthP0oUKc)
 
 ### Video
 
